@@ -37,6 +37,9 @@ const INTENTS = [
 		phrases: [
 			"PO X GR status",
 			"GR status of PO X",
+			"PO X GR bucketing",
+			"GR bucketing of PO X",
+			"what is the GR bucket of PO X",
 			"is PO X fully GR'd",
 			"is PO X already fully GRed",
 			"check if PO X is fully GRed",

@@ -143,6 +143,46 @@
       function MessageContent({ text, suggestions, onSelectSuggestion }) {
         const rawText = String(text || "");
         const showSuggestionHeader = !rawText.toLowerCase().startsWith("did you mean");
+
+        // Sanitize incoming HTML but allow a small whitelist of tags
+        const sanitizeHtml = (dirty) => {
+          try {
+            if (!dirty) return "";
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(String(dirty), "text/html");
+            const allowed = ["B", "I", "STRONG", "EM", "BR", "P", "U", "SPAN"];
+
+            const walk = (node) => {
+              const children = Array.from(node.childNodes);
+              children.forEach((child) => {
+                if (child.nodeType === Node.ELEMENT_NODE) {
+                  if (!allowed.includes(child.tagName)) {
+                    // Replace disallowed elements with their text content (strip markup)
+                    const textNode = doc.createTextNode(child.textContent || "");
+                    child.parentNode.replaceChild(textNode, child);
+                  } else {
+                    // Strip any attributes from allowed elements
+                    Array.from(child.attributes).forEach((attr) =>
+                      child.removeAttribute(attr.name),
+                    );
+                    walk(child);
+                  }
+                } else if (child.nodeType === Node.COMMENT_NODE) {
+                  child.parentNode.removeChild(child);
+                }
+              });
+            };
+
+            walk(doc.body);
+            return doc.body.innerHTML;
+          } catch (e) {
+            // Fallback: escape everything
+            return String(dirty)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+          }
+        };
         
         // Inline Suggestions Rendering logic
         const renderSuggestions = () => {
@@ -197,9 +237,11 @@
               <div className="flex flex-col gap-2 w-full">
                 {nonTableLines.map((ln, i) =>
                   ln.trim() ? (
-                    <div key={`txt-${i}`} className="whitespace-pre-wrap">
-                      {ln}
-                    </div>
+                    <div
+                      key={`txt-${i}`}
+                      className="whitespace-pre-wrap"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(ln) }}
+                    />
                   ) : null,
                 )}
                 <div className="overflow-x-auto w-full mt-1 mb-1 rounded-lg border border-gray-200 shadow-sm">
@@ -230,9 +272,8 @@
                             <td
                               key={`c-${i}-${j}`}
                               className="px-3 py-2 border-b border-gray-100 whitespace-nowrap text-gray-700"
-                            >
-                              {cell}
-                            </td>
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(cell) }}
+                            />
                           ))}
                         </tr>
                       ))}
@@ -248,9 +289,11 @@
         return (
           <React.Fragment>
             {rawText.split("\n").map((ln, i) => (
-              <div key={i} className="min-h-[1.25em] whitespace-pre-wrap">
-                {ln}
-              </div>
+              <div
+                key={i}
+                className="min-h-[1.25em] whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(ln) }}
+              />
             ))}
             {renderSuggestions()}
           </React.Fragment>

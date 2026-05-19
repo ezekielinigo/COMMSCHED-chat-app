@@ -154,13 +154,23 @@ function formatCommschedHeaderDate_(dateValue) {
 }
 
 function findHeaderColumn_(headers, exactHeader) {
+	const target = normalizeHeaderText_(exactHeader);
+	if (!target) return -1;
+
 	let foundIndex = -1;
 	(headers || []).forEach((header, index) => {
-		if (String(header || "").trim() === exactHeader) {
+		if (normalizeHeaderText_(header) === target) {
 			foundIndex = index;
 		}
 	});
 	return foundIndex;
+}
+
+function normalizeHeaderText_(value) {
+	return String(value || "")
+		.replace(/\s+/g, " ")
+		.trim()
+		.toLowerCase();
 }
 
 function getScriptCache_() {
@@ -187,11 +197,11 @@ function setCachedJson_(key, value, ttlSeconds) {
 }
 
 function findRightmostHeaderColumnByPrefix_(headers, headerPrefix) {
-	const prefix = String(headerPrefix || "").trim();
+	const prefix = normalizeHeaderText_(headerPrefix);
 	if (!prefix) return -1;
 
 	for (let index = (headers || []).length - 1; index >= 0; index -= 1) {
-		const header = String(headers[index] || "").trim();
+		const header = normalizeHeaderText_(headers[index]);
 		if (header.indexOf(prefix) === 0) {
 			return index;
 		}
@@ -201,7 +211,7 @@ function findRightmostHeaderColumnByPrefix_(headers, headerPrefix) {
 }
 
 function getCommschedLookupMeta_() {
-	const cacheKey = "commsched:lookup-meta:v1";
+	const cacheKey = "commsched:lookup-meta:v3";
 	const cached = getCachedJson_(cacheKey);
 	if (cached && cached.sourceLink && cached.sheetName && Number.isInteger(cached.poColumn) && Number.isInteger(cached.delivColumn)) {
 		return cached;
@@ -240,6 +250,63 @@ function getCommschedLookupMeta_() {
 		lastColumn: lastColumn,
 		poColumn: poColumn,
 		delivColumn: delivColumn,
+	};
+	setCachedJson_(cacheKey, meta, 900);
+	return meta;
+}
+
+function getCommschedGrLookupMeta_() {
+	const cacheKey = "commsched:lookup-meta:gr:v2";
+	const cached = getCachedJson_(cacheKey);
+	if (
+		cached &&
+		cached.sourceLink &&
+		cached.sheetName &&
+		Number.isInteger(cached.poColumn) &&
+		Number.isInteger(cached.currencyColumn) &&
+		Number.isInteger(cached.grAmountColumn) &&
+		Number.isInteger(cached.grColumn)
+	) {
+		return cached;
+	}
+
+	const latestSource = getLatestCommschedSource_();
+	if (!latestSource) {
+		return null;
+	}
+
+	const workbook = openSpreadsheetFromLink_(latestSource.link);
+	const sheetName = formatCommschedSheetName_(latestSource.date);
+	const sheet = workbook.getSheetByName(sheetName);
+	if (!sheet) {
+		return null;
+	}
+
+	const headerRow = 3;
+	const lastColumn = sheet.getLastColumn();
+	if (lastColumn < 1) {
+		return null;
+	}
+
+	const headers = sheet.getRange(headerRow, 1, 1, lastColumn).getDisplayValues()[0];
+	const poColumn = findHeaderColumn_(headers, "PO Number");
+	const currencyColumn = findHeaderColumn_(headers, "Currency");
+	const grAmountColumn = findRightmostHeaderColumnByPrefix_(headers, "Goods Receipt (as of");
+	const grColumn = findRightmostHeaderColumnByPrefix_(headers, "GR% Bucketing as of");
+	if (poColumn === -1 || currencyColumn === -1 || grAmountColumn === -1 || grColumn === -1) {
+		return null;
+	}
+
+	const meta = {
+		sourceLink: latestSource.link,
+		sheetName: sheetName,
+		headerRow: headerRow,
+		dataStartRow: headerRow + 1,
+		lastColumn: lastColumn,
+		poColumn: poColumn,
+		currencyColumn: currencyColumn,
+		grAmountColumn: grAmountColumn,
+		grColumn: grColumn,
 	};
 	setCachedJson_(cacheKey, meta, 900);
 	return meta;

@@ -8,7 +8,7 @@ function checkPoStatus(entities) {
 	const startedAt = Date.now();
 	const poNumber = String(entities.PO_NUMBER || "").trim();
 	if (!poNumber) {
-		return "Cannot find PO " + poNumber + " in latest COMMSCHED sheet.";
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
 	}
 
 	const metaLookupStartedAt = Date.now();
@@ -16,7 +16,7 @@ function checkPoStatus(entities) {
 	console.log("[checkPoStatus] metadata lookup: " + (Date.now() - metaLookupStartedAt) + "ms");
 
 	if (!meta) {
-		return "Cannot find PO " + poNumber + " in latest COMMSCHED sheet.";
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
 	}
 
 	const workbookStartedAt = Date.now();
@@ -25,12 +25,12 @@ function checkPoStatus(entities) {
 	console.log("[checkPoStatus] workbook open + sheet resolve: " + (Date.now() - workbookStartedAt) + "ms");
 
 	if (!sheet) {
-		return "Cannot find PO " + poNumber + " in latest COMMSCHED sheet.";
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
 	}
 
 	const lastRow = sheet.getLastRow();
 	if (lastRow <= meta.headerRow) {
-		return "Cannot find PO " + poNumber + " in latest COMMSCHED sheet.";
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
 	}
 
 	const rowLookupStartedAt = Date.now();
@@ -39,7 +39,7 @@ function checkPoStatus(entities) {
 
 	if (!match) {
 		console.log("[checkPoStatus] total: " + (Date.now() - startedAt) + "ms");
-		return "Cannot find PO " + poNumber + " in latest COMMSCHED sheet.";
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
 	}
 
 	const delivReadStartedAt = Date.now();
@@ -48,39 +48,94 @@ function checkPoStatus(entities) {
 	console.log("[checkPoStatus] total: " + (Date.now() - startedAt) + "ms");
 
 	if (delivValue === "YES") {
-		return "PO " + poNumber + " is closed.";
+		return "<b>PO " + poNumber + "</b> is closed.";
 	}
 	if (delivValue === "NO") {
-		return "PO " + poNumber + " is still open.";
+		return "<b>PO " + poNumber + "</b> is still open.";
 	}
 
-	return "No data found for PO " + poNumber + ".";
+	return "No data found for <b>PO " + poNumber + "</b>.";
 }
 
 function checkPoGrStatus(entities) {
-	const poNumber = entities.PO_NUMBER;
-	return "PO " + poNumber + " is fully Gr'd";
+	const startedAt = Date.now();
+	const poNumber = String(entities.PO_NUMBER || "").trim();
+	if (!poNumber) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const metaLookupStartedAt = Date.now();
+	const meta = getCommschedGrLookupMeta_();
+	console.log("[checkPoGrStatus] metadata lookup: " + (Date.now() - metaLookupStartedAt) + "ms");
+
+	if (!meta) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const workbookStartedAt = Date.now();
+	const workbook = openSpreadsheetFromLink_(meta.sourceLink);
+	const sheet = workbook.getSheetByName(meta.sheetName);
+	console.log("[checkPoGrStatus] workbook open + sheet resolve: " + (Date.now() - workbookStartedAt) + "ms");
+
+	if (!sheet) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const lastRow = sheet.getLastRow();
+	if (lastRow <= meta.headerRow) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const rowLookupStartedAt = Date.now();
+	const match = findPoRowInColumn_(sheet, meta.poColumn, meta.dataStartRow, lastRow, poNumber);
+	console.log("[checkPoGrStatus] PO lookup: " + (Date.now() - rowLookupStartedAt) + "ms" + (match ? " via " + match.method : " (not found)"));
+
+	if (!match) {
+		console.log("[checkPoGrStatus] total: " + (Date.now() - startedAt) + "ms");
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const rowReadStartedAt = Date.now();
+	const rowValues = sheet.getRange(match.row, 1, 1, meta.lastColumn).getDisplayValues()[0] || [];
+	const currencyValue = String(rowValues[meta.currencyColumn] || "").trim();
+	const grAmountValue = String(rowValues[meta.grAmountColumn] || "").trim();
+	const grValue = String(rowValues[meta.grColumn] || "").trim().replace(/\s+/g, " ").toUpperCase();
+	console.log("[checkPoGrStatus] row read: " + (Date.now() - rowReadStartedAt) + "ms");
+	console.log("[checkPoGrStatus] total: " + (Date.now() - startedAt) + "ms");
+
+	const bucketReplies = {
+		"A. ZERO GR": "<b>PO " + poNumber + "</b> is not yet GR'd.",
+		"B. 1-10% GRD": "<b>PO " + poNumber + "</b> has a GR'd value of " + currencyValue + " " + grAmountValue + " (1-10% GR'd).",
+		"C. 11-30% GRD": "<b>PO " + poNumber + "</b> has a GR'd value of " + currencyValue + " " + grAmountValue + " (11-30% GR'd).",
+		"D. 31-50% GRD": "<b>PO " + poNumber + "</b> has a GR'd value of " + currencyValue + " " + grAmountValue + " (31-50% GR'd).",
+		"E. 51-70% GRD": "<b>PO " + poNumber + "</b> has a GR'd value of " + currencyValue + " " + grAmountValue + " (51-70% GR'd).",
+		"F. 71-90% GRD": "<b>PO " + poNumber + "</b> has a GR'd value of " + currencyValue + " " + grAmountValue + " (71-90% GR'd).",
+		"G. 91-99% GRD": "<b>PO " + poNumber + "</b> has a GR'd value of " + currencyValue + " " + grAmountValue + " (91-99% GR'd).",
+		"H. FULLY GRD": "<b>PO " + poNumber + "</b> is fully GR'd.",
+	};
+
+	return bucketReplies[grValue] || "No data found for <b>PO " + poNumber + "</b>.";
 }
 
 function checkPoRemainingBalance(entities) {
 	const poNumber = entities.PO_NUMBER;
-	return "The remaining balance of PO " + poNumber + " is: [balance here]";
+	return "The remaining balance of <b>PO " + poNumber + "</b> is: [balance here]";
 }
 
 function checkPoLatestGrDate(entities) {
 	const poNumber = entities.PO_NUMBER;
-	return "The latest GR date of PO " + poNumber + " is: [date here]";
+	return "The latest GR date of <b>PO " + poNumber + "</b> is: [date here]";
 }
 /****************** PO AGING ******************/
 
 function checkPoAging(entities) {
 	const poNumber = entities.PO_NUMBER;
-	return "PO " + poNumber + " is [age here] days old";
+	return "<b>PO " + poNumber + "</b> is [age here] days old";
 }
 
 function checkPoAgingExceeded(entities) {
 	const poNumber = entities.PO_NUMBER;
-	return "PO " + poNumber + " has exceeded standard SLA: [yes/no here]";
+	return "<b>PO " + poNumber + "</b> has exceeded standard SLA: [yes/no here]";
 }
 
 function checkPoAgingExceededList(entities) {
