@@ -4,7 +4,7 @@
 - only the functions directly called by intent routing live here
 
 */
-function checkPoStatus(entities) {
+function checkPoStatus(entities) { // done
 	const startedAt = Date.now();
 	const poNumber = String(entities.PO_NUMBER || "").trim();
 	if (!poNumber) {
@@ -57,7 +57,7 @@ function checkPoStatus(entities) {
 	return "No data found for <b>PO " + poNumber + "</b>.";
 }
 
-function checkPoGrStatus(entities) {
+function checkPoGrStatus(entities) { // done
 	const startedAt = Date.now();
 	const poNumber = String(entities.PO_NUMBER || "").trim();
 	if (!poNumber) {
@@ -117,9 +117,56 @@ function checkPoGrStatus(entities) {
 	return bucketReplies[grValue] || "No data found for <b>PO " + poNumber + "</b>.";
 }
 
-function checkPoRemainingBalance(entities) {
-	const poNumber = entities.PO_NUMBER;
-	return "The remaining balance of <b>PO " + poNumber + "</b> is: [balance here]";
+function checkPoRemainingBalance(entities) { // done
+	const startedAt = Date.now();
+	const poNumber = String(entities.PO_NUMBER || "").trim();
+	if (!poNumber) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const metaLookupStartedAt = Date.now();
+	const meta = getCommschedRemainingBalanceLookupMeta_();
+	console.log("[checkPoRemainingBalance] metadata lookup: " + (Date.now() - metaLookupStartedAt) + "ms");
+
+	if (!meta) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const workbookStartedAt = Date.now();
+	const workbook = openSpreadsheetFromLink_(meta.sourceLink);
+	const sheet = workbook.getSheetByName(meta.sheetName);
+	console.log("[checkPoRemainingBalance] workbook open + sheet resolve: " + (Date.now() - workbookStartedAt) + "ms");
+
+	if (!sheet) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const lastRow = sheet.getLastRow();
+	if (lastRow <= meta.headerRow) {
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const rowLookupStartedAt = Date.now();
+	const match = findPoRowInColumn_(sheet, meta.poColumn, meta.dataStartRow, lastRow, poNumber);
+	console.log("[checkPoRemainingBalance] PO lookup: " + (Date.now() - rowLookupStartedAt) + "ms" + (match ? " via " + match.method : " (not found)"));
+
+	if (!match) {
+		console.log("[checkPoRemainingBalance] total: " + (Date.now() - startedAt) + "ms");
+		return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	}
+
+	const rowReadStartedAt = Date.now();
+	const rowValues = sheet.getRange(match.row, 1, 1, meta.lastColumn).getDisplayValues()[0] || [];
+	const currencyValue = String(rowValues[meta.currencyColumn] || "").trim();
+	const remainingBalanceValue = String(rowValues[meta.remainingBalanceColumn] || "").trim();
+	console.log("[checkPoRemainingBalance] row read: " + (Date.now() - rowReadStartedAt) + "ms");
+	console.log("[checkPoRemainingBalance] total: " + (Date.now() - startedAt) + "ms");
+
+	if (!currencyValue || !remainingBalanceValue) {
+		return "No data found for <b>PO " + poNumber + "</b>.";
+	}
+
+	return "<b>PO " + poNumber + "</b> has a remaining balance of " + currencyValue + " " + remainingBalanceValue + ".";
 }
 
 function checkPoLatestGrDate(entities) {

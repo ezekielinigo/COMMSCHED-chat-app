@@ -312,6 +312,60 @@ function getCommschedGrLookupMeta_() {
 	return meta;
 }
 
+function getCommschedRemainingBalanceLookupMeta_() {
+	const cacheKey = "commsched:lookup-meta:remaining-balance:v1";
+	const cached = getCachedJson_(cacheKey);
+	if (
+		cached &&
+		cached.sourceLink &&
+		cached.sheetName &&
+		Number.isInteger(cached.poColumn) &&
+		Number.isInteger(cached.currencyColumn) &&
+		Number.isInteger(cached.remainingBalanceColumn)
+	) {
+		return cached;
+	}
+
+	const latestSource = getLatestCommschedSource_();
+	if (!latestSource) {
+		return null;
+	}
+
+	const workbook = openSpreadsheetFromLink_(latestSource.link);
+	const sheetName = formatCommschedSheetName_(latestSource.date);
+	const sheet = workbook.getSheetByName(sheetName);
+	if (!sheet) {
+		return null;
+	}
+
+	const headerRow = 3;
+	const lastColumn = sheet.getLastColumn();
+	if (lastColumn < 1) {
+		return null;
+	}
+
+	const headers = sheet.getRange(headerRow, 1, 1, lastColumn).getDisplayValues()[0];
+	const poColumn = findHeaderColumn_(headers, "PO Number");
+	const currencyColumn = findHeaderColumn_(headers, "Currency");
+	const remainingBalanceColumn = findRightmostHeaderColumnByPrefix_(headers, "To be GRed (PO Amount - GR) (as of");
+	if (poColumn === -1 || currencyColumn === -1 || remainingBalanceColumn === -1) {
+		return null;
+	}
+
+	const meta = {
+		sourceLink: latestSource.link,
+		sheetName: sheetName,
+		headerRow: headerRow,
+		dataStartRow: headerRow + 1,
+		lastColumn: lastColumn,
+		poColumn: poColumn,
+		currencyColumn: currencyColumn,
+		remainingBalanceColumn: remainingBalanceColumn,
+	};
+	setCachedJson_(cacheKey, meta, 900);
+	return meta;
+}
+
 function findPoRowInColumn_(sheet, poColumn, dataStartRow, lastRow, poNumber) {
 	const rowCount = lastRow - dataStartRow + 1;
 	if (rowCount < 1) {

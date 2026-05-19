@@ -10,7 +10,7 @@ entities:
 
 const INTENTS = [
 	{
-		name: "check_po_status",
+		name: "check_po_status", // g rephrase mo na
 		phrases: [
 			"PO X status",
 			"status of PO X",
@@ -33,7 +33,7 @@ const INTENTS = [
 		handler: "checkPoStatus"
 	},
 	{
-		name: "check_po_gr_status",
+		name: "check_po_gr_status", // g rephrase mo na
 		phrases: [
 			"PO X GR status",
 			"GR status of PO X",
