@@ -4,6 +4,16 @@ function doGet() {
     .setTitle('COMMSCHED Chat App');
 }
 
+function getMissingEntityMessage(entityKey) {
+  const prompts = {
+    PO_NUMBER: "Please provide a 10-digit PO number",
+    DATE: "Please provide a date (MM/DD/YYYY)",
+    YEAR: "Please provide a year",
+  };
+
+  return prompts[entityKey] || "Please provide more information";
+}
+
 function getGeminiResponse(userText, messages) {
   const CONFIDENCE_THRESHOLD = 0.5;
   const fallback = "Sorry, I’m not sure I understood that.";
@@ -24,9 +34,9 @@ function getGeminiResponse(userText, messages) {
 
   const required = intent.requiredEntities || [];
   const entities = parsed.entities || {};
-  const missingRequired = required.some((key) => !entities[key]);
+  const missingRequired = required.find((key) => !entities[key]);
   if (missingRequired) {
-    return "Please provide a 10-digit PO number.";
+    return getMissingEntityMessage(missingRequired);
   }
 
   const handlers = {

@@ -26,6 +26,10 @@ function normalizeText(text) {
 		.trim();
 }
 
+function escapeRegExp(text) {
+	return String(text || "").replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+}
+
 function tokenize(text) {
 	if (!text) return [];
 	return text.split(/\s+/).filter(Boolean);
@@ -80,15 +84,44 @@ function normalizedLevenshteinSimilarity(a, b) {
 	return 1 - dist / maxLen;
 }
 
-function extractPoNumber(normalizedText) {
-	const matches = normalizedText.match(/\b\d{10}\b/g) || [];
-	if (matches.length === 0) {
-		return { error: "Please provide a 10-digit PO number." };
+function extractEntitiesFromText(userText) {
+	const rawText = String(userText || "");
+	const poMatches = rawText.match(/\b\d{10}\b/g) || [];
+	const dateMatches =
+		rawText.match(/\b(?:0?[1-9]|1[0-2])[\/](?:0?[1-9]|[12]\d|3[01])[\/](?:19|20)\d{2}\b/g) ||
+		rawText.match(/\b(?:0?[1-9]|1[0-2])-(?:0?[1-9]|[12]\d|3[01])-(?:19|20)\d{2}\b/g) ||
+		[];
+	const yearMatches = rawText.match(/\b(?:19|20)\d{2}\b/g) || [];
+
+	return {
+		PO_NUMBER: poMatches,
+		DATE: dateMatches,
+		YEAR: yearMatches,
+	};
+}
+
+function normalizeEntityValue(entityKey, rawValue) {
+	if (entityKey === "DATE") {
+		return normalizeText(rawValue).replace(/\s+/g, " ").trim();
 	}
-	if (matches.length > 1) {
-		return { error: "Please provide a single 10-digit PO number." };
-	}
-	return { value: matches[0] };
+	return normalizeText(rawValue);
+}
+
+function replaceEntityValuesForMatching(normalizedText, entityMatches) {
+	let output = String(normalizedText || "");
+
+	const replaceMatch = (entityKey, value) => {
+		const normalizedValue = normalizeEntityValue(entityKey, value);
+		if (!normalizedValue) return;
+		const re = new RegExp("\\b" + escapeRegExp(normalizedValue) + "\\b", "g");
+		output = output.replace(re, "x");
+	};
+
+	(entityMatches.DATE || []).forEach((value) => replaceMatch("DATE", value));
+	(entityMatches.PO_NUMBER || []).forEach((value) => replaceMatch("PO_NUMBER", value));
+	(entityMatches.YEAR || []).forEach((value) => replaceMatch("YEAR", value));
+
+	return output;
 }
 
 function replacePoWithPlaceholder(normalizedText, poNumber) {
@@ -157,18 +190,30 @@ function buildIntentSuggestion(intent, inputForMatch, poNumber) {
 }
 
 function parseInput(userText) {
+	const rawText = String(userText || "");
 	const normalized = normalizeText(userText);
 	if (!normalized) {
-		return { error: "Please provide a 10-digit PO number." };
+		return {
+			intent: null,
+			confidence: 0,
+			entities: {},
+			matchedPhrase: null,
+			suggestions: [],
+		};
 	}
 
-	const poExtraction = extractPoNumber(normalized);
-	if (poExtraction.error) {
-		return { error: poExtraction.error };
-	}
-
-	const poNumber = poExtraction.value;
-	const normalizedForMatch = replacePoWithPlaceholder(normalized, poNumber);
+	const entityMatches = extractEntitiesFromText(rawText);
+	const normalizedForMatch = replaceEntityValuesForMatching(
+		normalized,
+		entityMatches,
+	);
+	const entities = {};
+	Object.keys(entityMatches).forEach((key) => {
+		const matches = entityMatches[key] || [];
+		if (matches.length > 0) {
+			entities[key] = matches[0];
+		}
+	});
 
 	let bestIntent = null;
 	let bestScore = 0;
@@ -183,15 +228,17 @@ function parseInput(userText) {
 			bestPhrase = bestForIntent.phrase;
 		}
 
-		const suggestion = buildIntentSuggestion(intent, normalizedForMatch, poNumber);
+		const suggestion = buildIntentSuggestion(
+			intent,
+			normalizedForMatch,
+			entities.PO_NUMBER,
+		);
 		if (suggestion) {
 			suggestions.push(suggestion);
 		}
 	});
 
 	suggestions.sort((a, b) => b.score - a.score);
-
-	const entities = { PO_NUMBER: poNumber };
 
 	if (!bestIntent) {
 		return {
