@@ -77,10 +77,12 @@ const INTENTS = [
 	{
 		name: "check_po_aging",
 		phrases: [
+			"What is the aging of PO X",
+			"What is the age of PO X",
+			"How old is PO X",
+			"Check the aging of PO X",
+			"Aging of PO X",
 			"PO X aging",
-			"how old is PO X",
-			"what is the age of PO X",
-			"what is the aging of PO X"
 		],
 		requiredEntities: ["PO_NUMBER"],
 		handler: "checkPoAging"
@@ -88,21 +90,50 @@ const INTENTS = [
 	{
 		name: "check_po_aging_exceeded",
 		phrases: [
-			"has PO X exceeded standard SLA",
-			"is PO X aging exceeded",
-			"is PO X expired",
+			"Has PO X exceeded the standard SLA",
+			"Has PO X exceeded SLA",
+			"Did PO X exceed the standard SLA",
+			"Is PO X beyond the standard SLA",
+			"Check if PO X exceeded the standard SLA",
 		],
 		requiredEntities: ["PO_NUMBER"],
-		handler: "checkPoAgingExceeded"
+		handler: "checkPoAging"
 	},
 	{
-		name: "check_po_aging_exceeded_list",
+		name: "check_po_high_risk",
 		phrases: [
-			"which POs have exceeded standard SLA",
-			"list all POs that have exceeded standard SLA",
-			"which POs are aging beyond 12 months?",
+			"Is PO X high risk",
+			"Is PO X a high risk PO",
+			"Is PO X legacy",
+			"Is PO X a legacy PO",
+			"Check if PO X is high risk",
 		],
-		requiredEntities: [],
-		handler: "checkPoAgingExceededList"
-	}
+		requiredEntities: ["PO_NUMBER"],
+		handler: "checkPoAging"
+	},
+	{
+		name: "list_po_aging",
+		phrases: [
+			"Which POs are aging X",
+			"Which POs are aging beyond 24 months",
+			"List all X POs",
+			"List all POs X old",
+			"List of all POs X old",
+			"List all POs <6 months old",
+			"List all POs 6-9 months old",
+			"List all POs 9-12 months old",
+			"List all POs 12-24 months old",
+			"List all POs >24 months old",
+			"List all high risk POs",
+			"List all legacy POs",
+			"Which POs are older than X",
+			"Show me all POs older than X",
+			"Which POs are beyond X",
+			"List of all POs at least 1 year old",
+		],
+		requiredEntities: ["AGE_FILTER"],
+		responseType: "list",
+		handler: "listPoAging"
+	},
+
 ];

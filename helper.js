@@ -18,9 +18,42 @@ function getMissingEntityMessage(entityKey) {
 		PO_NUMBER: "Please provide a 10-digit PO number",
 		DATE: "Please provide a date (MM/DD/YYYY)",
 		YEAR: "Please provide a year",
+		AGE_FILTER: `
+		Please provide an aging filter:
+			- <6 months
+			- 6-9 months
+			- 9-12 months
+			- 12-24 months
+			- >24 months
+		`,
 	};
 
 	return prompts[entityKey] || "Please provide more information";
+}
+
+function getIntentInfo(userText) {
+	const parsed = parseInput(userText);
+	if (!parsed || !parsed.intent) {
+		return {
+			intent: null,
+			isList: false,
+			hasRequiredEntities: false,
+			missingEntity: null,
+		};
+	}
+
+	const intent = INTENTS.find((i) => i.name === parsed.intent);
+	const required = intent && intent.requiredEntities ? intent.requiredEntities : [];
+	const entities = parsed.entities || {};
+	const missingRequired = required.find((key) => !entities[key]) || null;
+	const isList = intent && String(intent.responseType || "").toLowerCase() === "list";
+
+	return {
+		intent: parsed.intent,
+		isList: Boolean(isList),
+		hasRequiredEntities: !missingRequired,
+		missingEntity: missingRequired,
+	};
 }
 
 function getGeminiResponse(userText, messages) {
@@ -54,8 +87,7 @@ function getGeminiResponse(userText, messages) {
 		checkPoRemainingBalance: checkPoRemainingBalance,
 		checkPoLatestGrDate: checkPoLatestGrDate,
 		checkPoAging: checkPoAging,
-		checkPoAgingExceeded: checkPoAgingExceeded,
-		checkPoAgingExceededList: checkPoAgingExceededList,
+		listPoAging: listPoAging,
 	};
 
 	const handler = handlers[intent.handler];
@@ -63,7 +95,7 @@ function getGeminiResponse(userText, messages) {
 		return fallback;
 	}
 
-	return handler(entities);
+	return handler(entities, parsed);
 }
 
 function getLinksSheet_() {
@@ -85,7 +117,41 @@ function parseDateValue_(value) {
 		return value;
 	}
 
-	const parsed = new Date(value);
+	const text = String(value || "").trim();
+	if (!text) {
+		return null;
+	}
+
+	const explicitFormats = [
+		/^\s*(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})\s*$/,
+		/^\s*(\d{1,2})-(\d{1,2})-(\d{2}|\d{4})\s*$/,
+	];
+
+	for (let i = 0; i < explicitFormats.length; i += 1) {
+		const match = text.match(explicitFormats[i]);
+		if (!match) {
+			continue;
+		}
+
+		const month = Number(match[1]) - 1;
+		const day = Number(match[2]);
+		let year = Number(match[3]);
+		if (match[3].length === 2) {
+			year += 2000;
+		}
+
+		const parsedExplicit = new Date(year, month, day);
+		if (
+			!isNaN(parsedExplicit.getTime()) &&
+			parsedExplicit.getFullYear() === year &&
+			parsedExplicit.getMonth() === month &&
+			parsedExplicit.getDate() === day
+		) {
+			return parsedExplicit;
+		}
+	}
+
+	const parsed = new Date(text);
 	return isNaN(parsed.getTime()) ? null : parsed;
 }
 
@@ -591,6 +657,70 @@ function getDatasetMeta_(datasetKey, requestedFieldKeys, options) {
 
 function getCommschedMeta_(requestedFieldKeys, options) {
 	return getDatasetMeta_("COMMSCHED", requestedFieldKeys, options);
+}
+
+function getDatasetRowsByField_(datasetKey, requestedFieldKeys, options) {
+	const meta = getDatasetMeta_(datasetKey, requestedFieldKeys, options);
+	if (!meta) {
+		return null;
+	}
+
+	const workbook = openSpreadsheetFromLink_(meta.sourceLink);
+	const sheet = workbook.getSheetByName(meta.sheetName);
+	if (!sheet) {
+		return null;
+	}
+
+	const lastRow = sheet.getLastRow();
+	if (lastRow <= meta.headerRow) {
+		return {
+			meta: meta,
+			rows: [],
+		};
+	}
+
+	const rowCount = lastRow - meta.dataStartRow + 1;
+	if (rowCount < 1) {
+		return {
+			meta: meta,
+			rows: [],
+		};
+	}
+
+	const range = sheet.getRange(meta.dataStartRow, 1, rowCount, meta.lastColumn);
+	const rawRows = range.getValues();
+	const displayRows = range.getDisplayValues();
+	const fieldKeys = normalizeRequestedFields_(meta.requestedFields || requestedFieldKeys);
+	const rows = [];
+
+	for (let i = 0; i < rowCount; i += 1) {
+		const rawRow = rawRows[i] || [];
+		const displayRow = displayRows[i] || [];
+		const row = {
+			rowNumber: meta.dataStartRow + i,
+			values: {},
+			rawValues: {},
+		};
+
+		for (let j = 0; j < fieldKeys.length; j += 1) {
+			const fieldKey = fieldKeys[j];
+			const columnIndex = meta.fieldColumns[fieldKey];
+			const hasColumn = typeof columnIndex === "number" && columnIndex >= 0;
+			row.values[fieldKey] = hasColumn ? String(displayRow[columnIndex] || "").trim() : "";
+			row.rawValues[fieldKey] = hasColumn ? rawRow[columnIndex] : "";
+		}
+
+		rows.push(row);
+	}
+
+	return {
+		meta: meta,
+		rows: rows,
+	};
+}
+
+function getCommschedRows_(requestedFieldKeys, options) {
+	return getDatasetRowsByField_("COMMSCHED", requestedFieldKeys, options);
 }
 
 function getRfpMeta_(requestedFieldKeys, options) {

@@ -30,6 +30,39 @@ function escapeRegExp(text) {
 	return String(text || "").replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
 }
 
+function extractAgeFilterMatches(rawText) {
+	const input = String(rawText || "");
+	const patterns = [
+		/\b(?:a|b|c|d|e)\.\s*(?:<6 months|6-9 months|9-12 months|12-24 months|>24 months)\b/i,
+		/\b(?:<6 months|6-9 months|9-12 months|12-24 months|>24 months)\b/i,
+		/\bhigh[-\s]?risk\b/i,
+		/\blegacy\b/i,
+		/(?:^|\s)(?:at least|>=|greater than or equal to)\s*\d+\s*(?:months?|mos?|mo|years?|yrs?)\b/i,
+		/(?:^|\s)(?:<|less than|under)\s*\d+\s*(?:months?|mos?|mo|years?|yrs?)\b/i,
+		/(?:^|\s)(?:>|more than|over|beyond|older than)\s*\d+\s*(?:months?|mos?|mo|years?|yrs?)\b/i,
+	];
+	const matches = [];
+	const seen = {};
+
+	patterns.forEach((pattern) => {
+		const found = input.match(pattern);
+		if (!found || !found[0]) {
+			return;
+		}
+
+		const value = String(found[0]).trim();
+		const normalizedValue = normalizeText(value);
+		if (!value || seen[normalizedValue]) {
+			return;
+		}
+
+		seen[normalizedValue] = true;
+		matches.push(value);
+	});
+
+	return matches;
+}
+
 function tokenize(text) {
 	if (!text) return [];
 	return text.split(/\s+/).filter(Boolean);
@@ -92,11 +125,13 @@ function extractEntitiesFromText(userText) {
 		rawText.match(/\b(?:0?[1-9]|1[0-2])-(?:0?[1-9]|[12]\d|3[01])-(?:19|20)\d{2}\b/g) ||
 		[];
 	const yearMatches = rawText.match(/\b(?:19|20)\d{2}\b/g) || [];
+	const ageFilterMatches = extractAgeFilterMatches(rawText);
 
 	return {
 		PO_NUMBER: poMatches,
 		DATE: dateMatches,
 		YEAR: yearMatches,
+		AGE_FILTER: ageFilterMatches,
 	};
 }
 
@@ -118,6 +153,7 @@ function replaceEntityValuesForMatching(normalizedText, entityMatches) {
 	};
 
 	(entityMatches.DATE || []).forEach((value) => replaceMatch("DATE", value));
+	(entityMatches.AGE_FILTER || []).forEach((value) => replaceMatch("AGE_FILTER", value));
 	(entityMatches.PO_NUMBER || []).forEach((value) => replaceMatch("PO_NUMBER", value));
 	(entityMatches.YEAR || []).forEach((value) => replaceMatch("YEAR", value));
 
