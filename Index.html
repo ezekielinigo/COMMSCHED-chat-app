@@ -100,7 +100,7 @@
 
         if (hasError) {
           return (
-            <div className="block w-12 h-12 shrink-0 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md">
+            <div className="block w-12 h-12 shrink-0 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-2xl">
               S
             </div>
           );
@@ -110,7 +110,7 @@
           <img
             src={LOGO_IMAGE_URL}
             alt="SIA logo"
-            className="block w-12 h-12 shrink-0 rounded-xl object-cover shadow-md bg-white"
+            className="block w-12 h-12 shrink-0 rounded-xl object-cover"
             onError={() => setHasError(true)}
           />
         );
@@ -153,7 +153,7 @@
         const [step, setStep] = useState(0);
         const slides = [
           {
-            icon: "👋",
+            icon: "👋🏽",
             title: "Hi, I'm SIA!",
             desc: "Your Status & Insights Assistant. I can help you track POs, check GR status, and more.",
           },
@@ -666,7 +666,7 @@
                         <img
                           src={EXPRESSIONS[m.expression] || EXPRESSIONS.neutral}
                           alt="SIA"
-                          className="w-10 h-10 rounded-xl mr-2 object-cover border border-gray-100 shadow-sm bg-white shrink-0"
+                          className="w-10 h-10 rounded-xl mr-2 object-cover shrink-0"
                           onError={(e) => { e.target.src = LOGO_IMAGE_URL; }}
                         />
                       )}
@@ -687,7 +687,7 @@
                       <img
                         src={EXPRESSIONS.thinking}
                         alt="SIA thinking"
-                        className="w-10 h-10 rounded-xl mr-2 object-cover border border-gray-100 shadow-sm bg-white shrink-0"
+                        className="w-10 h-10 rounded-xl mr-2 object-cover shrink-0"
                         onError={(e) => { e.target.src = LOGO_IMAGE_URL; }}
                       />
                       <div className="flex items-center gap-1.5 bg-white border border-gray-100 px-5 py-4 rounded-2xl rounded-bl-sm text-sm shadow-sm">
