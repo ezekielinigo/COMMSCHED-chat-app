@@ -56,6 +56,8 @@ const INTENTS = [
 			"how much remaining balance is left on PO X",
 			"what is the remaining balance of PO X",
 			"can you tell me the remaining balance of PO X",
+			"are there any remaining balance on PO X",
+			"are there any pending transactions for PO X",
 		],
 		requiredEntities: ["PO_NUMBER"],
 		handler: "checkPoRemainingBalance"
@@ -71,6 +73,22 @@ const INTENTS = [
 		],
 		requiredEntities: ["PO_NUMBER"],
 		handler: "checkPoLatestGrDate"
+	},
+	{
+		name: "check_po_total_value",
+		phrases: [
+			"PO X total value",
+			"total value of PO X",
+			"check PO X total value",
+			"what is the total value of PO X",
+			"can you tell me the total value of PO X",
+			"what is the total po value vs actual gr value of PO X",
+			"compare total po value and actual gr value of PO X",
+			"PO X gr value total",
+			"check PO X gr total value"
+		],
+		requiredEntities: ["PO_NUMBER"],
+		handler: "checkPoTotalValue"
 	},
 
 	/****************** PO AGING ******************/

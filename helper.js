@@ -201,6 +201,7 @@ function getGeminiResponse(userText) {
 		checkPoGrStatus: checkPoGrStatus,
 		checkPoRemainingBalance: checkPoRemainingBalance,
 		checkPoLatestGrDate: checkPoLatestGrDate,
+		checkPoTotalValue: checkPoTotalValue,
 		checkPoAging: checkPoAging,
 		listPoAging: listPoAging,
 	};
@@ -477,6 +478,7 @@ const DATASET_SPECS = {
 			poDate: { match: "exact", value: "PO Date" },
 			poSla: { match: "exact", value: "PO SLA" },
 			currency: { match: "exact", value: "Currency" },
+			poAmount: { match: "exact", value: "PO Amount" },
 			deliveryComplete: { match: "rightmostPrefix", value: "DELIV COMPLETE?" },
 			latestGrDate: { match: "rightmostPrefix", value: "Latest GR Date as of" },
 			goodsReceiptAmount: { match: "rightmostPrefix", value: "Goods Receipt (as of" },
@@ -488,6 +490,7 @@ const DATASET_SPECS = {
 			poDate: "poDateColumn",
 			poSla: "poSlaColumn",
 			currency: "currencyColumn",
+			poAmount: "poAmountColumn",
 			deliveryComplete: "delivColumn",
 			latestGrDate: "latestGrDateColumn",
 			goodsReceiptAmount: "grAmountColumn",

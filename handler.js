@@ -2,7 +2,7 @@
 
 - intent-facing data lookup functions
 - only the functions directly called by intent routing live here
-- ex: checkPoStatus, checkPoGrStatus, checkPoRemainingBalance, checkPoLatestGrDate, checkPoAging, listPoAging
+- ex: checkPoStatus, checkPoGrStatus, checkPoRemainingBalance, checkPoLatestGrDate, checkPoTotalValue, checkPoAging, listPoAging
 
 */
 function checkPoStatus(entities) { // done
@@ -76,6 +76,28 @@ function checkPoRemainingBalance(entities) { // done
 	}
 
 	return "<b>PO " + poNumber + "</b> has a remaining balance of " + currencyValue + " " + remainingBalanceValue + ".";
+}
+
+function checkPoTotalValue(entities) { // done
+	const poNumber = String(entities.PO_NUMBER || "").trim();
+	if (!poNumber) {
+		return getCommschedNotFoundMessage_(poNumber);
+	}
+
+	const lookup = lookupCommschedPoRow_(poNumber, ["currency", "poAmount", "goodsReceiptAmount"]);
+	if (!lookup || !lookup.found) {
+		return getCommschedNotFoundMessage_(poNumber);
+	}
+
+	const currencyValue = String(lookup.values.currency || "").trim();
+	const poAmountValue = String(lookup.values.poAmount || "").trim();
+	const grAmountValue = String(lookup.values.goodsReceiptAmount || "").trim();
+
+	if (!currencyValue || !poAmountValue || !grAmountValue) {
+		return getCommschedNoDataMessage_(poNumber);
+	}
+
+	return "<b>PO " + poNumber + "</b> has a total value of " + currencyValue + " " + poAmountValue + " and GR value of " + currencyValue + " " + grAmountValue + ".";
 }
 
 function checkPoLatestGrDate(entities) {
