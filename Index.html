@@ -1,5 +1,4 @@
-﻿<!-- awawa d-->
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -53,7 +52,7 @@
       }
     </style>
   </head>
-  <body class="bg-white md:bg-gray-100 m-0 p-0 h-[100dvh] flex flex-col w-full md:w-auto">
+  <body class="bg-[#214991] m-0 p-0 h-[100dvh] flex flex-col w-full md:w-auto">
     <script id="user-context-data" type="application/json">
       <?!= userContextJson ?>
     </script>
@@ -62,24 +61,35 @@
     </script>
     <div
       id="root"
-      class="h-full w-full max-w-full md:max-w-4xl mx-auto flex flex-col bg-white md:shadow-xl overflow-hidden"
+      class="h-full w-full max-w-full md:max-w-4xl mx-auto flex flex-col bg-[#214991] md:shadow-xl overflow-hidden"
     ></div>
 
     <script type="text/babel">
       const { useState, useEffect, useRef } = React;
-      const USER_CONTEXT = JSON.parse(document.getElementById("user-context-data")?.textContent || "{}");
+      const USER_CONTEXT = JSON.parse(
+        document.getElementById("user-context-data")?.textContent || "{}",
+      );
 
       const USER_EMAIL = String(USER_CONTEXT.email || "").trim();
       const USER_FIRST_NAME = String(USER_CONTEXT.firstName || "").trim();
       const USER_DIVISION = String(USER_CONTEXT.divisionDisplay || "").trim();
       const USER_ACCESS_ALLOWED = USER_CONTEXT.accessAllowed !== false;
-      const HEADER_BASE_TEXT = String(USER_CONTEXT.headerBaseText || "Status & Insights Assistant");
-      const HEADER_DENIED_TEXT = String(USER_CONTEXT.headerDeniedText || "Please contact an admin to use the chatbot.");
-      const ACCESS_DENIED_REPLY = String(USER_CONTEXT.accessDeniedMessage || "You do not have access to this chatbot, please contact an admin.");
+      const HEADER_BASE_TEXT = String(
+        USER_CONTEXT.headerBaseText || "Status & Insights Assistant",
+      );
+      const HEADER_DENIED_TEXT = String(
+        USER_CONTEXT.headerDeniedText ||
+          "Please contact an admin to use the chatbot.",
+      );
+      const ACCESS_DENIED_REPLY = String(
+        USER_CONTEXT.accessDeniedMessage ||
+          "You do not have access to this chatbot, please contact an admin.",
+      );
 
-      const storageSuffix = String(USER_CONTEXT.email || "guest")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_") || "guest";
+      const storageSuffix =
+        String(USER_CONTEXT.email || "guest")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_") || "guest";
       const CHAT_STORAGE_KEY = `sia_chat_${storageSuffix}`;
       const STARTED_STORAGE_KEY = `sia_started_${storageSuffix}`;
 
@@ -94,48 +104,66 @@
 
       const formatSiaGreeting = (firstName, intro = "Hi") => {
         const cleanFirstName = String(firstName || "").trim();
-        return cleanFirstName ? `${intro} ${cleanFirstName}! I'm SIA` : `Hi! I'm SIA`;
+        return cleanFirstName
+          ? `${intro} ${cleanFirstName}! I'm SIA`
+          : `Hi! I'm SIA`;
       };
 
-      const QUICK = [
-        "PO / GR Status",
-        "Billing",
-        "Support",
-      ];
+      const QUICK = ["PO / GR Status", "Billing", "Support"];
       const PERSISTENT_MENU = [
         "General PO Status Inquiries",
         "Aging & Risk Monitoring",
         "GR Tracking & Status Monitoring",
       ];
 
-      const LOGO_IMAGE_URL = JSON.parse(
-        document.getElementById("logo-data")?.textContent || '""'
-      ) || "https://drive.google.com/uc?export=view&id=10AlyHkfuFJm3yUDhK_Oorxb3B_SgYVUb";
+      const LOGO_IMAGE_URL =
+        JSON.parse(document.getElementById("logo-data")?.textContent || '""') ||
+        "https://drive.google.com/uc?export=view&id=10AlyHkfuFJm3yUDhK_Oorxb3B_SgYVUb";
 
       const EXPRESSIONS = {
         neutral: LOGO_IMAGE_URL,
-        celebration: "https://lh3.googleusercontent.com/d/1TnXnWOdRHrR7ym7k7o89c8j1CfbUDCFP",
-        concerned: "https://lh3.googleusercontent.com/d/1XqFOeww2dX7eJ_QO7mq4tey6AEcZpKWx",
-        confirm: "https://lh3.googleusercontent.com/d/1hp0mRaQdnBl4Hb9-BfJ40MzB55J5tRSQ",
-        confused: "https://lh3.googleusercontent.com/d/1cJ5bEgMyF51GU7n-8EY7uY1a20aBmwOP",
-        doubtful: "https://lh3.googleusercontent.com/d/1RpMiXj7_NWYXF5NBRcPaUyX8sw2z3WQB",
-        excited: "https://lh3.googleusercontent.com/d/1z-fBPBe044tYjGfGPlJKXEooS3ckV__g",
-        inspired: "https://lh3.googleusercontent.com/d/1sUTOP6N6kZ7876A1CYpXP_Bf_zWKnBQk",
-        loving: "https://lh3.googleusercontent.com/d/1AfAY9tNc36wYy-FuKHzIRa9fSnR5deDm",
-        stressed: "https://lh3.googleusercontent.com/d/1N7X2J7ZbtpmH9Nt84cWHT8xN3OAUjEQC",
-        surprised: "https://lh3.googleusercontent.com/d/1mfQF2cR8QsKaYbkypsNIiN7YxspC4Zpe",
-        thinking: "https://lh3.googleusercontent.com/d/16WY5qBprxRUPRcW4-NR5mPIdagZ5e_W9",
-        tired: "https://lh3.googleusercontent.com/d/1qsgoGsJR-CS9-lUMdWWvBqBJV9r4mpKU",
-        waiting: "https://lh3.googleusercontent.com/d/1PCeZq4nHxl8pswFNCcwgSOcFxBTFWe9_",
+        celebration:
+          "https://lh3.googleusercontent.com/d/1TnXnWOdRHrR7ym7k7o89c8j1CfbUDCFP",
+        concerned:
+          "https://lh3.googleusercontent.com/d/1XqFOeww2dX7eJ_QO7mq4tey6AEcZpKWx",
+        confirm:
+          "https://lh3.googleusercontent.com/d/1hp0mRaQdnBl4Hb9-BfJ40MzB55J5tRSQ",
+        confused:
+          "https://lh3.googleusercontent.com/d/1cJ5bEgMyF51GU7n-8EY7uY1a20aBmwOP",
+        doubtful:
+          "https://lh3.googleusercontent.com/d/1RpMiXj7_NWYXF5NBRcPaUyX8sw2z3WQB",
+        excited:
+          "https://lh3.googleusercontent.com/d/1z-fBPBe044tYjGfGPlJKXEooS3ckV__g",
+        inspired:
+          "https://lh3.googleusercontent.com/d/1sUTOP6N6kZ7876A1CYpXP_Bf_zWKnBQk",
+        loving:
+          "https://lh3.googleusercontent.com/d/1AfAY9tNc36wYy-FuKHzIRa9fSnR5deDm",
+        stressed:
+          "https://lh3.googleusercontent.com/d/1N7X2J7ZbtpmH9Nt84cWHT8xN3OAUjEQC",
+        surprised:
+          "https://lh3.googleusercontent.com/d/1mfQF2cR8QsKaYbkypsNIiN7YxspC4Zpe",
+        thinking:
+          "https://lh3.googleusercontent.com/d/16WY5qBprxRUPRcW4-NR5mPIdagZ5e_W9",
+        tired:
+          "https://lh3.googleusercontent.com/d/1qsgoGsJR-CS9-lUMdWWvBqBJV9r4mpKU",
+        waiting:
+          "https://lh3.googleusercontent.com/d/1PCeZq4nHxl8pswFNCcwgSOcFxBTFWe9_",
       };
 
       const guessExpression = (text) => {
         const t = String(text).toLowerCase();
-        if (t.match(/\b(yay|awesome|great|thanks|thank you|celebrate|done|success)\b/)) return "celebration";
+        if (
+          t.match(
+            /\b(yay|awesome|great|thanks|thank you|celebrate|done|success)\b/,
+          )
+        )
+          return "celebration";
         if (t.match(/\b(wow|whoa|really|omg)\b/)) return "surprised";
-        if (t.match(/\b(sorry|apologize|issue|error|concerned|wrong)\b/)) return "concerned";
+        if (t.match(/\b(sorry|apologize|issue|error|concerned|wrong)\b/))
+          return "concerned";
         if (t.match(/\b(wait|hold on|moment|checking)\b/)) return "waiting";
-        if (t.match(/\b(confused|not sure|don't know|what)\b|\?/)) return "confused";
+        if (t.match(/\b(confused|not sure|don't know|what)\b|\?/))
+          return "confused";
         if (t.match(/\b(inspired|idea|let's)\b/)) return "inspired";
         if (t.match(/\b(tired|exhausted)\b/)) return "tired";
         if (t.match(/\b(love|heart|perfect)\b/)) return "loving";
@@ -143,7 +171,11 @@
         if (t.match(/\b(stress|hard|difficult)\b/)) return "stressed";
         if (t.match(/\b(confirm|yes|sure|absolutely)\b/)) return "confirm";
         if (t.match(/\b(doubt|maybe|perhaps|unlikely)\b/)) return "doubtful";
-        if (t.match(/\b(excited|can't wait|looking forward)\b/) || t.includes("!")) return "excited";
+        if (
+          t.match(/\b(excited|can't wait|looking forward)\b/) ||
+          t.includes("!")
+        )
+          return "excited";
         return "neutral";
       };
 
@@ -151,11 +183,14 @@
         const [hasError, setHasError] = useState(false);
 
         const imgClass = className || "w-12 h-12 rounded-xl block shadow-sm";
-        const fallbackClass = className || "w-12 h-12 rounded-xl block text-2xl";
+        const fallbackClass =
+          className || "w-12 h-12 rounded-xl block text-2xl";
 
         if (hasError) {
           return (
-            <div className={`shrink-0 bg-indigo-600 text-white flex items-center justify-center font-bold ${fallbackClass}`}>
+            <div
+              className={`shrink-0 bg-indigo-600 text-white flex items-center justify-center font-bold ${fallbackClass}`}
+            >
               S
             </div>
           );
@@ -290,9 +325,17 @@
         );
       }
 
-      function MessageContent({ text, suggestions, download, onSelectSuggestion, hideSuggestionHeader = false }) {
+      function MessageContent({
+        text,
+        suggestions,
+        download,
+        onSelectSuggestion,
+        hideSuggestionHeader = false,
+      }) {
         const rawText = String(text || "");
-        const showSuggestionHeader = !hideSuggestionHeader && !rawText.toLowerCase().startsWith("did you mean");
+        const showSuggestionHeader =
+          !hideSuggestionHeader &&
+          !rawText.toLowerCase().startsWith("did you mean");
 
         // Sanitize incoming HTML but allow a small whitelist of tags
         const sanitizeHtml = (dirty) => {
@@ -308,7 +351,9 @@
                 if (child.nodeType === Node.ELEMENT_NODE) {
                   if (!allowed.includes(child.tagName)) {
                     // Replace disallowed elements with their text content (strip markup)
-                    const textNode = doc.createTextNode(child.textContent || "");
+                    const textNode = doc.createTextNode(
+                      child.textContent || "",
+                    );
                     child.parentNode.replaceChild(textNode, child);
                   } else {
                     // Strip any attributes from allowed elements
@@ -328,12 +373,12 @@
           } catch (e) {
             // Fallback: escape everything
             return String(dirty)
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;");
+              .replace(/&/g, "&")
+              .replace(/</g, "<")
+              .replace(/>/g, ">");
           }
         };
-        
+
         // Inline Suggestions Rendering logic
         const renderSuggestions = () => {
           if (!suggestions || suggestions.length === 0) return null;
@@ -352,11 +397,30 @@
                     className="flex items-center justify-between w-full text-left p-4 rounded-2xl border border-indigo-50 bg-indigo-50/20 hover:bg-indigo-50/50 hover:border-indigo-100 transition-all group active:scale-[0.99]"
                   >
                     <span className="text-[15px] font-semibold text-indigo-900 flex items-center gap-3">
-                      <span className="text-indigo-300 font-bold min-w-[24px]">{i + 1}.</span>
-                      <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(intent.label || intent.displayText || "") }} />
+                      <span className="text-indigo-300 font-bold min-w-[24px]">
+                        {i + 1}.
+                      </span>
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizeHtml(
+                            intent.label || intent.displayText || "",
+                          ),
+                        }}
+                      />
                     </span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 text-indigo-300 group-hover:translate-x-1 transition-transform">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2.5}
+                      stroke="currentColor"
+                      className="w-4 h-4 text-indigo-300 group-hover:translate-x-1 transition-transform"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                      />
                     </svg>
                   </button>
                 ))}
@@ -372,7 +436,9 @@
 
           const handleDownload = () => {
             try {
-              const blob = new Blob([download.content], { type: `${mimeType};charset=utf-8` });
+              const blob = new Blob([download.content], {
+                type: `${mimeType};charset=utf-8`,
+              });
               const url = URL.createObjectURL(blob);
               const link = document.createElement("a");
               link.href = url;
@@ -392,7 +458,12 @@
                 onClick={handleDownload}
                 className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-4 h-4"
+                >
                   <path d="M12 3a.75.75 0 0 1 .75.75v8.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 1 1 1.06-1.06l2.22 2.22V3.75A.75.75 0 0 1 12 3Z" />
                   <path d="M4.5 14.25a.75.75 0 0 1 .75.75v2.25c0 .414.336.75.75.75h12a.75.75 0 0 0 .75-.75V15a.75.75 0 0 1 1.5 0v2.25A2.25 2.25 0 0 1 18 19.5H6A2.25 2.25 0 0 1 3.75 17.25V15a.75.75 0 0 1 .75-.75Z" />
                 </svg>
@@ -459,7 +530,9 @@
                             <td
                               key={`c-${i}-${j}`}
                               className="px-3 py-2 border-b border-gray-100 whitespace-nowrap text-gray-700"
-                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(cell) }}
+                              dangerouslySetInnerHTML={{
+                                __html: sanitizeHtml(cell),
+                              }}
                             />
                           ))}
                         </tr>
@@ -495,7 +568,8 @@
         const [showResetConfirm, setShowResetConfirm] = useState(false);
         const [intentSuggestions, setIntentSuggestions] = useState(null);
         const [pendingIntent, setPendingIntent] = useState(null); // short-lived pending intent for slot-filling
-        const [pendingUnGrdEntityType, setPendingUnGrdEntityType] = useState("");
+        const [pendingUnGrdEntityType, setPendingUnGrdEntityType] =
+          useState("");
         const [messages, setMessages] = useState([]);
         const [inputValue, setInputValue] = useState("");
         const [isTyping, setIsTyping] = useState(false);
@@ -506,18 +580,37 @@
 
         // --- Local Small Talk Handling ---
         const detectSmallTalk = (text) => {
-          const t = String(text || "").toLowerCase().trim();
+          const t = String(text || "")
+            .toLowerCase()
+            .trim();
           // Blacklist query-like keywords
-          if (t.match(/\b(po|gr|status|list|show|check|aging|risk|billing|inventory)\b/)) return false;
-          
+          if (
+            t.match(
+              /\b(po|gr|status|list|show|check|aging|risk|billing|inventory)\b/,
+            )
+          )
+            return false;
+
           // Whitelists
-          if (t.match(/\b(hi|hello|hey|yo|howdy|good morning|good afternoon|good evening)\b/)) return true;
+          if (
+            t.match(
+              /\b(hi|hello|hey|yo|howdy|good morning|good afternoon|good evening)\b/,
+            )
+          )
+            return true;
           if (t.match(/\b(thank(s|u)?|thx|appreciate|grateful)\b/)) return true;
-          if (t.match(/\b(bye|goodbye|see you|later|cya|talk soon)\b/)) return true;
-          if (t.match(/^(yes|yep|yup|sure|ok|okay|cool|awesome|perfect|absolutely)$/)) return true;
+          if (t.match(/\b(bye|goodbye|see you|later|cya|talk soon)\b/))
+            return true;
+          if (
+            t.match(
+              /^(yes|yep|yup|sure|ok|okay|cool|awesome|perfect|absolutely)$/,
+            )
+          )
+            return true;
           if (t.match(/^(no|nope|nah|not really)$/)) return true;
-          if (t.match(/\b(how are (you|things)|how'?s it going|what'?s up)\b/)) return true;
-          
+          if (t.match(/\b(how are (you|things)|how'?s it going|what'?s up)\b/))
+            return true;
+
           return false;
         };
 
@@ -532,13 +625,21 @@
           } else if (t.match(/\b(thank(s|u)?|thx|appreciate|grateful)\b/)) {
             response = "You're very welcome! I'm happy to help. 😊";
             exp = "loving";
-          } else if (t.match(/\b(how are (you|things)|how'?s it going|what'?s up)\b/)) {
-            response = "I'm doing well, thanks for asking! Ready to assist you.";
+          } else if (
+            t.match(/\b(how are (you|things)|how'?s it going|what'?s up)\b/)
+          ) {
+            response =
+              "I'm doing well, thanks for asking! Ready to assist you.";
             exp = "neutral";
           } else if (t.match(/\b(bye|goodbye|see you|later|cya)\b/)) {
-            response = "Goodbye! Feel free to come back anytime you need help. 👋🏻";
+            response =
+              "Goodbye! Feel free to come back anytime you need help. 👋🏻";
             exp = "neutral";
-          } else if (t.match(/^(yes|yep|yup|sure|ok|okay|cool|awesome|perfect|absolutely)$/)) {
+          } else if (
+            t.match(
+              /^(yes|yep|yup|sure|ok|okay|cool|awesome|perfect|absolutely)$/,
+            )
+          ) {
             response = "Great!";
             exp = "confirm";
           } else if (t.match(/^(no|nope|nah|not really)$/)) {
@@ -551,7 +652,7 @@
             who: "bot",
             text: response,
             expression: exp,
-            ts: new Date().toISOString()
+            ts: new Date().toISOString(),
           };
         };
         // ---------------------------------
@@ -589,7 +690,9 @@
             if (s) {
               const parsed = JSON.parse(s);
               // Handle legacy { messages: [] } object from previous version
-              const restoredMessages = Array.isArray(parsed) ? parsed : parsed.messages || [];
+              const restoredMessages = Array.isArray(parsed)
+                ? parsed
+                : parsed.messages || [];
               if (!USER_ACCESS_ALLOWED) {
                 setMessages([
                   {
@@ -617,7 +720,10 @@
         // Welcome message trigger
         useEffect(() => {
           if (!hasStarted) return;
-          if (messages.length === 0 && !localStorage.getItem(CHAT_STORAGE_KEY)) {
+          if (
+            messages.length === 0 &&
+            !localStorage.getItem(CHAT_STORAGE_KEY)
+          ) {
             if (!USER_ACCESS_ALLOWED) {
               setMessages([
                 {
@@ -667,7 +773,11 @@
 
         // Hook for Apps Script if deployed there
         // Do not fall back to canned placeholder replies when offline.
-        const sendToServer = (text, triggerSource = "query", confirmedUnGrdEntityType = "") => {
+        const sendToServer = (
+          text,
+          triggerSource = "query",
+          confirmedUnGrdEntityType = "",
+        ) => {
           return new Promise((resolve) => {
             // Local small talk interceptor
             if (triggerSource === "query" && detectSmallTalk(text)) {
@@ -680,7 +790,10 @@
                 google.script.run
                   .withSuccessHandler(resolve)
                   .withFailureHandler(() => resolve(null))
-                    .getGeminiResponse(text, { triggerSource, confirmedUnGrdEntityType });
+                  .getGeminiResponse(text, {
+                    triggerSource,
+                    confirmedUnGrdEntityType,
+                  });
                 return;
               } catch (e) {
                 resolve(null);
@@ -725,7 +838,8 @@
         };
 
         const handleSend = async (text, triggerSource = "query") => {
-          const isSuggestionPayload = text && typeof text === "object" && !Array.isArray(text);
+          const isSuggestionPayload =
+            text && typeof text === "object" && !Array.isArray(text);
           const raw = isSuggestionPayload
             ? String(text.displayText || text.label || text.query || "").trim()
             : String(text || "").trim();
@@ -749,12 +863,24 @@
 
           // If we have a short-lived pending intent and the user replied with a bare PO/GR number,
           // combine it into the original intent for sending, but still display the bare value.
-          let sendText = isSuggestionPayload && text.query ? String(text.query || "").trim() : raw;
-          const clickedUnGrdEntityType = isSuggestionPayload && text.entityType ? String(text.entityType || "").trim().toLowerCase() : "";
-          const effectiveUnGrdEntityType = clickedUnGrdEntityType || pendingUnGrdEntityType;
+          let sendText =
+            isSuggestionPayload && text.query
+              ? String(text.query || "").trim()
+              : raw;
+          const clickedUnGrdEntityType =
+            isSuggestionPayload && text.entityType
+              ? String(text.entityType || "")
+                  .trim()
+                  .toLowerCase()
+              : "";
+          const effectiveUnGrdEntityType =
+            clickedUnGrdEntityType || pendingUnGrdEntityType;
           try {
             if (pendingIntent) {
-              if (pendingIntent.missingEntity === "PO_NUMBER" && /^\d{10}$/.test(raw)) {
+              if (
+                pendingIntent.missingEntity === "PO_NUMBER" &&
+                /^\d{10}$/.test(raw)
+              ) {
                 if (pendingIntent.phrase) {
                   sendText = String(pendingIntent.phrase)
                     .replace(/\bPO X\b/gi, "PO " + raw)
@@ -763,7 +889,10 @@
                   sendText = raw;
                 }
                 setPendingIntent(null);
-              } else if (pendingIntent.missingEntity === "GR_NUMBER" && /^\d{1,9}$/.test(raw)) {
+              } else if (
+                pendingIntent.missingEntity === "GR_NUMBER" &&
+                /^\d{1,9}$/.test(raw)
+              ) {
                 if (pendingIntent.phrase) {
                   sendText = String(pendingIntent.phrase)
                     .replace(/\bGR X\b/gi, "GR " + raw)
@@ -787,7 +916,10 @@
               } else if (pendingIntent.missingEntity === "VENDOR" && raw) {
                 // Combine vendor reply into the original intent phrase (replace X)
                 if (pendingIntent.phrase) {
-                  sendText = String(pendingIntent.phrase).replace(/\bX\b/gi, raw).replace(/\s+/g, " ").trim();
+                  sendText = String(pendingIntent.phrase)
+                    .replace(/\bX\b/gi, raw)
+                    .replace(/\s+/g, " ")
+                    .trim();
                 } else {
                   // If no phrase available, try a conservative full-query
                   sendText = "List all POs from " + raw;
@@ -796,7 +928,10 @@
               }
             }
 
-            if (clickedUnGrdEntityType === "vendor" || clickedUnGrdEntityType === "division") {
+            if (
+              clickedUnGrdEntityType === "vendor" ||
+              clickedUnGrdEntityType === "division"
+            ) {
               setPendingUnGrdEntityType(clickedUnGrdEntityType);
             }
           } catch (e) {
@@ -807,7 +942,11 @@
           if (USER_ACCESS_ALLOWED) {
             try {
               const intentInfo = await getIntentInfo(raw);
-              if (intentInfo && intentInfo.isList && intentInfo.hasRequiredEntities) {
+              if (
+                intentInfo &&
+                intentInfo.isList &&
+                intentInfo.hasRequiredEntities
+              ) {
                 shouldShowWait = true;
               } else if (!intentInfo) {
                 shouldShowWait = isLikelyListQuery(raw);
@@ -833,21 +972,42 @@
           await new Promise((r) => setTimeout(r, delay));
 
           try {
-            const resp = await sendToServer(sendText, triggerSource, effectiveUnGrdEntityType);
+            const resp = await sendToServer(
+              sendText,
+              triggerSource,
+              effectiveUnGrdEntityType,
+            );
 
             // Remove any interim 'Please wait' bot-wait messages we may have added
-            setMessages((prev) => prev.filter((m) => !(m.id && String(m.id).startsWith("bot-wait-"))));
+            setMessages((prev) =>
+              prev.filter(
+                (m) => !(m.id && String(m.id).startsWith("bot-wait-")),
+              ),
+            );
 
             // If no response (offline / no server), do not insert placeholder replies
-            if (resp === null || resp === undefined || String(resp).trim() === "") {
+            if (
+              resp === null ||
+              resp === undefined ||
+              String(resp).trim() === ""
+            ) {
               setIsTyping(false);
               return;
             }
 
-            const isStructuredResponse = resp && typeof resp === "object" && !Array.isArray(resp);
-            const textVal = isStructuredResponse ? String(resp.text || "") : String(resp || "");
-            const elapsedSeconds = Math.max(1, Math.round((Date.now() - startedAt) / 1000));
-            const responseText = isStructuredResponse && resp.download ? `${textVal.trim()} (Generated in ${elapsedSeconds}s)` : textVal;
+            const isStructuredResponse =
+              resp && typeof resp === "object" && !Array.isArray(resp);
+            const textVal = isStructuredResponse
+              ? String(resp.text || "")
+              : String(resp || "");
+            const elapsedSeconds = Math.max(
+              1,
+              Math.round((Date.now() - startedAt) / 1000),
+            );
+            const responseText =
+              isStructuredResponse && resp.download
+                ? `${textVal.trim()} (Generated in ${elapsedSeconds}s)`
+                : textVal;
             // If server returned a pendingIntent, store it short-term for the next user turn
             if (resp && resp.pendingIntent) {
               setPendingIntent(resp.pendingIntent);
@@ -858,8 +1018,17 @@
               Array.isArray(resp.suggestions) &&
               resp.suggestions.length > 0
             ) {
-              const suggestionType = String(resp.suggestions[0] && resp.suggestions[0].entityType ? resp.suggestions[0].entityType : "").trim().toLowerCase();
-              if (suggestionType === "vendor" || suggestionType === "division") {
+              const suggestionType = String(
+                resp.suggestions[0] && resp.suggestions[0].entityType
+                  ? resp.suggestions[0].entityType
+                  : "",
+              )
+                .trim()
+                .toLowerCase();
+              if (
+                suggestionType === "vendor" ||
+                suggestionType === "division"
+              ) {
                 setPendingUnGrdEntityType(suggestionType);
               }
             } else if (!resp.pendingIntent) {
@@ -872,10 +1041,20 @@
                 id: "bot-" + Date.now(),
                 who: "bot",
                 text: responseText,
-                expression: isStructuredResponse && resp.expression ? resp.expression : guessExpression(textVal),
-                suggestions: isStructuredResponse && Array.isArray(resp.suggestions) ? resp.suggestions : undefined,
-                hideSuggestionHeader: isStructuredResponse && Boolean(resp.hideSuggestionHeader),
-                download: isStructuredResponse && resp.download ? resp.download : undefined,
+                expression:
+                  isStructuredResponse && resp.expression
+                    ? resp.expression
+                    : guessExpression(textVal),
+                suggestions:
+                  isStructuredResponse && Array.isArray(resp.suggestions)
+                    ? resp.suggestions
+                    : undefined,
+                hideSuggestionHeader:
+                  isStructuredResponse && Boolean(resp.hideSuggestionHeader),
+                download:
+                  isStructuredResponse && resp.download
+                    ? resp.download
+                    : undefined,
                 ts: new Date().toISOString(),
               },
             ]);
@@ -922,7 +1101,9 @@
           };
 
           const openAuthUrl = (info) => {
-            const authUrl = String((info && (info.authorizationUrl || info.authUrl)) || "").trim();
+            const authUrl = String(
+              (info && (info.authorizationUrl || info.authUrl)) || "",
+            ).trim();
             if (authUrl) {
               try {
                 window.open(authUrl, "_blank", "noopener,noreferrer");
@@ -933,7 +1114,10 @@
               }
             }
 
-            finish((info && info.message) || "No authorization link was returned. Please try again or open the Apps Script editor once.");
+            finish(
+              (info && info.message) ||
+                "No authorization link was returned. Please try again or open the Apps Script editor once.",
+            );
           };
 
           if (window.google && google.script && google.script.run) {
@@ -941,17 +1125,23 @@
               google.script.run
                 .withSuccessHandler(openAuthUrl)
                 .withFailureHandler(() => {
-                  finish("I couldn't open the authorization flow from here. Please use the Apps Script editor once, then come back and refresh the web app.");
+                  finish(
+                    "I couldn't open the authorization flow from here. Please use the Apps Script editor once, then come back and refresh the web app.",
+                  );
                 })
                 .getReauthorizationInfo();
               return;
             } catch (e) {
-              finish("I couldn't open the authorization flow from here. Please use the Apps Script editor once, then come back and refresh the web app.");
+              finish(
+                "I couldn't open the authorization flow from here. Please use the Apps Script editor once, then come back and refresh the web app.",
+              );
               return;
             }
           }
 
-          finish("Open this app from the deployed Apps Script web app to access the authorization link.");
+          finish(
+            "Open this app from the deployed Apps Script web app to access the authorization link.",
+          );
         };
 
         const handleResetChat = () => {
@@ -969,10 +1159,12 @@
 
         if (showSplash) {
           return (
-            <div className="h-full w-full flex flex-col items-center justify-center bg-white transition-opacity duration-500">
+            <div className="h-full w-full flex flex-col items-center justify-center bg-[#574dd6] transition-opacity duration-500">
               <div className="flex flex-col items-center animate-in fade-in duration-700">
                 <LogoMark className="w-24 h-24 rounded-2xl shadow-lg" />
-                <h1 className="mt-6 text-3xl font-bold text-indigo-900 tracking-tight">SIA</h1>
+                <h1 className="mt-6 text-3xl font-bold text-white tracking-tight">
+                  SIA
+                </h1>
               </div>
             </div>
           );
@@ -1030,8 +1222,19 @@
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all font-semibold text-xs border border-indigo-100"
                       title="Open Admin Dashboard"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.5}
+                        stroke="currentColor"
+                        className="w-4 h-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+                        />
                       </svg>
                       <span>Dashboard</span>
                     </a>
@@ -1062,7 +1265,7 @@
             </header>
 
             {!hasStarted ? (
-              <div className="p-6 md:p-10 bg-white border-t shrink-0 flex flex-col items-center justify-center gap-8 min-h-[400px]">
+              <div className="p-6 md:p-10 bg-[#574dd6] border-t shrink-0 flex flex-col items-center justify-center gap-8 min-h-[400px]">
                 <div className="w-full max-w-sm bg-slate-50 rounded-[32px] p-8 border border-slate-100 shadow-sm">
                   <TutorialView onFinish={finishTutorial} isEmbedded={true} />
                 </div>
@@ -1077,13 +1280,13 @@
                     <button
                       onClick={handleTroubleAccess}
                       disabled={reauthInProgress}
-                      className="text-[13px] font-medium text-indigo-600 underline underline-offset-4 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 mt-2"
+                      className="text-[13px] font-medium text-white underline underline-offset-4 hover:text-gray-200 disabled:cursor-not-allowed disabled:opacity-60 mt-2"
                     >
                       Trouble having access? Click here.
                     </button>
                   ) : null}
                   {reauthMessage ? (
-                    <p className="text-[12px] text-center text-gray-400 leading-relaxed max-w-[18rem]">
+                    <p className="text-[12px] text-center text-gray-200 leading-relaxed max-w-[18rem]">
                       {reauthMessage}
                     </p>
                   ) : null}
@@ -1093,7 +1296,7 @@
               <React.Fragment>
                 {/* Messages Body */}
                 <main
-                  className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50 flex flex-col gap-5"
+                  className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#c6d3f8] flex flex-col gap-5"
                   aria-live="polite"
                 >
                   {messages.map((m) => (
@@ -1106,18 +1309,22 @@
                           src={EXPRESSIONS[m.expression] || EXPRESSIONS.neutral}
                           alt="SIA"
                           className="w-10 h-10 rounded-xl mr-2 object-cover shrink-0"
-                          onError={(e) => { e.target.src = LOGO_IMAGE_URL; }}
+                          onError={(e) => {
+                            e.target.src = LOGO_IMAGE_URL;
+                          }}
                         />
                       )}
                       <div
-                        className={`max-w-[85%] md:max-w-[75%] text-[15px] shadow-sm flex flex-col ${m.who === "user" ? "bg-indigo-50 text-indigo-900 rounded-2xl rounded-br-sm px-4 py-3" : m.suggestions ? "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-sm overflow-hidden p-6 shadow-md" : "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-sm overflow-hidden px-4 py-3"}`}
+                        className={`max-w-[85%] md:max-w-[75%] text-[15px] shadow-sm flex flex-col ${m.who === "user" ? "bg-[#3d8bec] text-white rounded-2xl rounded-br-sm px-4 py-3" : m.suggestions ? "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-sm overflow-hidden p-6 shadow-md" : "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-sm overflow-hidden px-4 py-3"}`}
                       >
-                        <MessageContent 
-                          text={m.text} 
-                          suggestions={m.suggestions} 
+                        <MessageContent
+                          text={m.text}
+                          suggestions={m.suggestions}
                           download={m.download}
                           hideSuggestionHeader={m.hideSuggestionHeader}
-                          onSelectSuggestion={(item) => handleSend(item, "menu")} 
+                          onSelectSuggestion={(item) =>
+                            handleSend(item, "menu")
+                          }
                         />
                       </div>
                     </div>
@@ -1129,7 +1336,9 @@
                         src={EXPRESSIONS.thinking}
                         alt="SIA thinking"
                         className="w-10 h-10 rounded-xl mr-2 object-cover shrink-0"
-                        onError={(e) => { e.target.src = LOGO_IMAGE_URL; }}
+                        onError={(e) => {
+                          e.target.src = LOGO_IMAGE_URL;
+                        }}
                       />
                       <div className="flex items-center gap-1.5 bg-white border border-gray-100 px-5 py-4 rounded-2xl rounded-bl-sm text-sm shadow-sm">
                         <span
@@ -1198,7 +1407,11 @@
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={onKeyDown}
-                    placeholder={USER_ACCESS_ALLOWED ? "Type a message..." : "Please contact an admin to use the chatbot."}
+                    placeholder={
+                      USER_ACCESS_ALLOWED
+                        ? "Type a message..."
+                        : "Please contact an admin to use the chatbot."
+                    }
                     className="flex-1 resize-none border border-gray-300 rounded-2xl px-4 py-3.5 text-[15px] focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 shadow-sm transition-all max-h-32 overflow-y-auto w-full"
                     aria-label="Message input"
                   ></textarea>
