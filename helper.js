@@ -626,7 +626,7 @@ function rowMatchesUserDivision_(rowDivisionValue, userProfile) {
 /****************** COMMSCHED SHARED HELPERS ******************/
 
 function getCommschedNotFoundMessage_(poNumber) {
-	return "Cannot find <b>PO " + poNumber + "</b> in latest COMMSCHED sheet.";
+	return "Cannot find <b>PO " + poNumber + "</b>. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 }
 
 function getCommschedNoDataMessage_(poNumber) {
@@ -957,25 +957,25 @@ function buildPoAgingReply_(poNumber, bucketInfo, intentName) {
 
 	if (intentName === "check_po_aging_exceeded") {
 		if (bucketCode === "d" || bucketCode === "e") {
-			return boldPo + " is " + bucketLabel + " old. It has exceeded the standard SLA.";
+			return boldPo + " is " + bucketLabel + " old from the PO creation date. It has exceeded the standard SLA.";
 		}
 
-		return boldPo + " is " + bucketLabel + " old. It has not yet exceeded the standard SLA.";
+		return boldPo + " is " + bucketLabel + " old from the PO creation date. It has not yet exceeded the standard SLA.";
 	}
 
 	if (intentName === "check_po_high_risk") {
 		if (bucketCode === "e") {
-			return boldPo + " is >24 months old. It is a high risk legacy PO.";
+			return boldPo + " is >24 months old from the PO creation date. It is a high risk legacy PO.";
 		}
 
-		return boldPo + " is " + bucketLabel + " old. It is not yet a high risk PO.";
+		return boldPo + " is " + bucketLabel + " old from the PO creation date. It is not yet a high risk PO.";
 	}
 
 	if (bucketCode === "e") {
-		return boldPo + " is >24 months old. It is already a high risk legacy PO.";
+		return boldPo + " is >24 months old from the PO creation date. It is already a high risk legacy PO.";
 	}
 
-	return boldPo + " is " + bucketLabel + " old.";
+	return boldPo + " is " + bucketLabel + " old from the PO creation date.";
 }
 
 function getIntentInfo(userText) {

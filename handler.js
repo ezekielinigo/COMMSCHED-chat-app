@@ -115,7 +115,7 @@ function checkPoTotalValue(entities, parsed, context) { // done
 function checkPoLatestGrDate(entities, parsed, context) {
 	const poNumber = String(entities.PO_NUMBER || "").trim();
 	if (!poNumber) {
-		return "Cannot find <b>PO X</b> in latest COMMSCHED sheet.";
+		return "Cannot find PO X. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	const lookup = lookupCommschedPoRow_(poNumber, ["latestGrDate"], context);
@@ -182,9 +182,9 @@ function listPoAging(entities, parsed, context) {
 		return response;
 	}
 
-	const dataset = getCommschedRows_(["poNumber", "poSla"], context);
+	const dataset = getCommschedRows_( ["poNumber", "poSla"], context);
 	if (!dataset || !dataset.rows) {
-		return "Cannot find the latest COMMSCHED sheet.";
+		return "Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	const matches = [];
@@ -234,7 +234,7 @@ function listPoAging(entities, parsed, context) {
 function listProjectDelayedClosure(entities, parsed, context) {
 	const dataset = getCommschedRows_(["project", "poNumber", "poSla", "latestGrDate"], context);
 	if (!dataset || !dataset.rows) {
-		return "Cannot find the latest COMMSCHED sheet.";
+		return "Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	const selectedByProject = {};
@@ -364,7 +364,7 @@ function listProjectDelayedClosure(entities, parsed, context) {
 function listPoUrgentCleanup(entities, parsed, context) {
 	const dataset = getCommschedRows_(["vendor", "poNumber", "poSla", "deliveryComplete"], context);
 	if (!dataset || !dataset.rows) {
-		return "Cannot find the latest COMMSCHED sheet.";
+		return "Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	const matches = [];
@@ -434,7 +434,7 @@ function listPoVendor(entities, parsed, context) {
 
 	const dataset = getCommschedRows_(["poNumber", "vendor"], context);
 	if (!dataset || !dataset.rows) {
-		return "Cannot find the latest COMMSCHED sheet.";
+		return "Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	// Collect unique vendor names
@@ -488,7 +488,7 @@ function listPoVendor(entities, parsed, context) {
 function listPoDormant(entities, parsed, context) {
 	const dataset = getCommschedRows_(["vendor", "poNumber", "goodsReceiptAmount"], context);
 	if (!dataset || !dataset.rows) {
-		return "Cannot find the latest COMMSCHED sheet.";
+		return "Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	const matches = [];
@@ -538,9 +538,9 @@ function listPoDormant(entities, parsed, context) {
 }
 
 function listPoVendorRemainingBalance(entities, parsed, context) {
-	const dataset = getCommschedRows_(["poNumber", "vendor", "ungrdUsd"], context);
+	const dataset = getCommschedRows_( ["poNumber", "vendor", "ungrdUsd"], context);
 	if (!dataset || !dataset.rows) {
-		return "Cannot find the latest COMMSCHED sheet.";
+		return "Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	const rows = [];
@@ -573,9 +573,9 @@ function listPoVendorRemainingBalance(entities, parsed, context) {
 }
 
 function listVendorRemainingBalance(entities, parsed, context) {
-	const dataset = getCommschedRows_(["vendor", "ungrdUsd"], context);
+	const dataset = getCommschedRows_( ["vendor", "ungrdUsd"], context);
 	if (!dataset || !dataset.rows) {
-		return "Cannot find the latest COMMSCHED sheet.";
+		return "Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.";
 	}
 
 	const vendorTotals = {};
@@ -628,7 +628,7 @@ function checkTotalUnGrdVendor(entities, parsed, context) {
 	if (!rawVendor) return getMissingEntityMessage('VENDOR');
 
 	const dataset = getCommschedRows_(['vendor','currency','remainingBalance'], context);
-	if (!dataset || !dataset.rows) return 'Cannot find the latest COMMSCHED sheet.';
+	if (!dataset || !dataset.rows) return 'Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.';
 
 	// Collect unique vendor names
 	const vendorSet = {};
@@ -685,7 +685,7 @@ function checkTotalUnGrdVendor(entities, parsed, context) {
 
 function listTotalUnGrdVendor(entities, parsed, context) {
 	const dataset = getCommschedRows_(['vendor','currency','remainingBalance'], context);
-	if (!dataset || !dataset.rows) return 'Cannot find the latest COMMSCHED sheet.';
+	if (!dataset || !dataset.rows) return 'Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.';
 
 	const vendorCurrencyMap = {};
 	for (let i=0;i<dataset.rows.length;i++){
@@ -736,7 +736,7 @@ function checkTotalUnGrdDivision(entities, parsed, context) {
 	}
 
 	const dataset = getCommschedRows_(['division','currency','remainingBalance'], context);
-	if (!dataset || !dataset.rows) return 'Cannot find the latest COMMSCHED sheet.';
+	if (!dataset || !dataset.rows) return 'Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.';
 
 	const totalsByCurrency = {};
 	let totalPos = 0;
@@ -772,7 +772,7 @@ function checkTotalUnGrdDivision(entities, parsed, context) {
 
 function listTotalUnGrdDivision(entities, parsed, context) {
 	const dataset = getCommschedRows_(['division','currency','remainingBalance'], context);
-	if (!dataset || !dataset.rows) return 'Cannot find the latest COMMSCHED sheet.';
+	if (!dataset || !dataset.rows) return 'Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.';
 
 	const groupMap = {};
 	for (let i=0;i<dataset.rows.length;i++){
