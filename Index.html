@@ -50,9 +50,19 @@
         animation: siaRollIn 0.45s ease-out;
         will-change: transform, opacity;
       }
+      @keyframes introPop {
+        0% { transform: translateY(6px) scale(0.98); opacity: 0 }
+        60% { transform: translateY(-6px) scale(1.02); opacity: 1 }
+        100% { transform: translateY(0) scale(1); opacity: 1 }
+      }
+
+      .sia-intro {
+        animation: introPop 650ms cubic-bezier(.2,.9,.18,1);
+        will-change: transform, opacity;
+      }
     </style>
   </head>
-  <body class="bg-[#214991] m-0 p-0 h-[100dvh] flex flex-col w-full md:w-auto">
+  <body class="bg-[#4784d7] m-0 p-0 h-[100dvh] flex flex-col w-full md:w-auto md:p-3">
     <script id="user-context-data" type="application/json">
       <?!= userContextJson ?>
     </script>
@@ -61,7 +71,7 @@
     </script>
     <div
       id="root"
-      class="h-full w-full max-w-full md:max-w-4xl mx-auto flex flex-col bg-[#214991] md:shadow-xl overflow-hidden"
+      class="h-full w-full max-w-full md:max-w-4xl mx-auto flex flex-col bg-[#4784d7] overflow-hidden rounded-md md:rounded-md md:shadow-[0_12px_32px_rgba(17,31,71,0.25)]"
     ></div>
 
     <script type="text/babel">
@@ -182,9 +192,9 @@
       function LogoMark({ className }) {
         const [hasError, setHasError] = useState(false);
 
-        const imgClass = className || "w-12 h-12 rounded-xl block shadow-sm";
-        const fallbackClass =
-          className || "w-12 h-12 rounded-xl block text-2xl";
+          const imgClass = className || "w-12 h-12 rounded-md block shadow-sm";
+          const fallbackClass =
+            className || "w-12 h-12 rounded-md block text-2xl";
 
         if (hasError) {
           return (
@@ -210,12 +220,12 @@
       function Modal({ title, children, onClose }) {
         return (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50 flex items-end md:items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl flex flex-col gap-4 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-white w-full max-w-sm rounded-[20px] p-6 shadow-2xl flex flex-col gap-4 animate-in slide-in-from-bottom-4 duration-300">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-800">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -260,15 +270,17 @@
         ];
 
         return (
-          <div className={`flex flex-col gap-6 ${isEmbedded ? "" : "py-4"}`}>
-            <div className="text-6xl text-center">{slides[step].icon}</div>
-            <div className="text-center">
-              <h3 className="text-lg font-bold text-indigo-900 mb-2">
-                {slides[step].title}
-              </h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                {slides[step].desc}
-              </p>
+          <div className={`flex h-full flex-col gap-6 ${isEmbedded ? "" : "py-4"}`}>
+            <div className="flex min-h-[196px] flex-col justify-center gap-5">
+              <div className="text-6xl text-center">{slides[step].icon}</div>
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-indigo-900 mb-2">
+                  {slides[step].title}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed min-h-[72px]">
+                  {slides[step].desc}
+                </p>
+              </div>
             </div>
             <div className="flex gap-1.5 justify-center">
               {slides.map((_, i) => (
@@ -282,7 +294,7 @@
               onClick={() =>
                 step < slides.length - 1 ? setStep(step + 1) : onFinish()
               }
-              className="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98]"
+              className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl shadow-[0_14px_28px_rgba(30,41,59,0.28)] hover:bg-indigo-700 transition-all active:scale-[0.98]"
             >
               {step < slides.length - 1 ? "Next" : "Start Chatting"}
             </button>
@@ -394,7 +406,7 @@
                   <button
                     key={intent.id}
                     onClick={() => onSelectSuggestion(intent)}
-                    className="flex items-center justify-between w-full text-left p-4 rounded-2xl border border-indigo-50 bg-indigo-50/20 hover:bg-indigo-50/50 hover:border-indigo-100 transition-all group active:scale-[0.99]"
+                    className="flex items-center justify-between w-full text-left p-4 rounded-lg border border-indigo-50 bg-indigo-50/20 hover:bg-indigo-50/50 hover:border-indigo-100 transition-all group active:scale-[0.99]"
                   >
                     <span className="text-[15px] font-semibold text-indigo-900 flex items-center gap-3">
                       <span className="text-indigo-300 font-bold min-w-[24px]">
@@ -456,7 +468,7 @@
             <div className="mt-4">
               <button
                 onClick={handleDownload}
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1159,10 +1171,10 @@
 
         if (showSplash) {
           return (
-            <div className="h-full w-full flex flex-col items-center justify-center bg-[#574dd6] transition-opacity duration-500">
+            <div className="h-full w-full flex flex-col items-center justify-center bg-[#c6d3f8] min-h-screen transition-opacity duration-500">
               <div className="flex flex-col items-center animate-in fade-in duration-700">
-                <LogoMark className="w-24 h-24 rounded-2xl shadow-lg" />
-                <h1 className="mt-6 text-3xl font-bold text-white tracking-tight">
+                <LogoMark className="w-24 h-24 rounded-md shadow-lg sia-intro" />
+                <h1 className="mt-6 text-3xl font-bold text-white tracking-tight sia-intro">
                   SIA
                 </h1>
               </div>
@@ -1186,13 +1198,13 @@
                   <div className="flex gap-3">
                     <button
                       onClick={() => setShowResetConfirm(false)}
-                      className="flex-1 py-3 px-4 rounded-2xl border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="flex-1 py-3 px-4 rounded-lg border border-gray-200 font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={confirmReset}
-                      className="flex-1 py-3 px-4 rounded-2xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-100"
+                      className="flex-1 py-3 px-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg shadow-red-100"
                     >
                       Clear All
                     </button>
@@ -1219,7 +1231,7 @@
                       href="https://datastudio.google.com/u/0/reporting/08c4ccc4-243a-47bf-a073-e6e6a0d71b1e/page/p_q5ejjxky3d"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all font-semibold text-xs border border-indigo-100"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all font-semibold text-xs border border-indigo-100"
                       title="Open Admin Dashboard"
                     >
                       <svg
@@ -1241,7 +1253,7 @@
                   )}
                   <button
                     onClick={handleResetChat}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all font-semibold text-xs border border-gray-100 hover:border-red-100"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all font-semibold text-xs border border-gray-100 hover:border-red-100"
                     title="Clear all messages and start a new conversation"
                   >
                     <svg
@@ -1265,14 +1277,14 @@
             </header>
 
             {!hasStarted ? (
-              <div className="p-6 md:p-10 bg-[#574dd6] border-t shrink-0 flex flex-col items-center justify-center gap-8 min-h-[400px]">
-                <div className="w-full max-w-sm bg-slate-50 rounded-[32px] p-8 border border-slate-100 shadow-sm">
+              <div className="p-6 md:p-10 bg-[#c6d3f8] border-t shrink-0 flex flex-col items-center justify-center gap-8 min-h-[400px]">
+                <div className="w-full max-w-sm bg-slate-50 rounded-md p-8 border border-slate-100 shadow-sm min-h-[340px] flex items-center justify-center text-center">
                   <TutorialView onFinish={finishTutorial} isEmbedded={true} />
                 </div>
                 <div className="flex flex-col items-center gap-4 w-full max-w-sm">
                   <button
                     onClick={finishTutorial}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-2xl shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] focus:ring-4 focus:ring-indigo-100"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-5 rounded-md shadow-[0_18px_32px_rgba(20,29,56,0.36)] transition-all active:scale-[0.98] focus:ring-4 focus:ring-indigo-100"
                   >
                     Get Started
                   </button>
@@ -1308,14 +1320,14 @@
                         <img
                           src={EXPRESSIONS[m.expression] || EXPRESSIONS.neutral}
                           alt="SIA"
-                          className="w-10 h-10 rounded-xl mr-2 object-cover shrink-0"
+                          className="w-10 h-10 rounded-lg mr-2 object-cover shrink-0"
                           onError={(e) => {
                             e.target.src = LOGO_IMAGE_URL;
                           }}
                         />
                       )}
                       <div
-                        className={`max-w-[85%] md:max-w-[75%] text-[15px] shadow-sm flex flex-col ${m.who === "user" ? "bg-[#3d8bec] text-white rounded-2xl rounded-br-sm px-4 py-3" : m.suggestions ? "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-sm overflow-hidden p-6 shadow-md" : "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-bl-sm overflow-hidden px-4 py-3"}`}
+                        className={`max-w-[85%] md:max-w-[75%] text-[15px] shadow-sm flex flex-col ${m.who === "user" ? "bg-[#3d8bec] text-white rounded-md rounded-br-sm px-4 py-3" : m.suggestions ? "bg-white border border-gray-100 text-gray-800 rounded-md rounded-bl-sm overflow-hidden p-6 shadow-md" : "bg-white border border-gray-100 text-gray-800 rounded-md rounded-bl-sm overflow-hidden px-4 py-3"}`}
                       >
                         <MessageContent
                           text={m.text}
@@ -1335,12 +1347,12 @@
                       <img
                         src={EXPRESSIONS.thinking}
                         alt="SIA thinking"
-                        className="w-10 h-10 rounded-xl mr-2 object-cover shrink-0"
+                        className="w-10 h-10 rounded-lg mr-2 object-cover shrink-0"
                         onError={(e) => {
                           e.target.src = LOGO_IMAGE_URL;
                         }}
                       />
-                      <div className="flex items-center gap-1.5 bg-white border border-gray-100 px-5 py-4 rounded-2xl rounded-bl-sm text-sm shadow-sm">
+                      <div className="flex items-center gap-1.5 bg-white border border-gray-100 px-5 py-4 rounded-xl rounded-bl-sm text-sm shadow-sm">
                         <span
                           className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"
                           style={{ animationDelay: "0s" }}
@@ -1369,7 +1381,7 @@
                       key={label}
                       type="button"
                       onClick={() => handleSend(label, "menu")}
-                      className="snap-start text-[13px] px-3.5 py-1.5 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-gray-100 transition-all font-medium whitespace-nowrap shrink-0 shadow-sm"
+                      className="snap-start text-[13px] px-3.5 py-1.5 rounded-md border border-gray-200 text-gray-700 bg-white hover:bg-gray-100 transition-all font-medium whitespace-nowrap shrink-0 shadow-sm"
                     >
                       {label}
                     </button>
@@ -1386,7 +1398,7 @@
                       key={label}
                       type="button"
                       onClick={() => handleSend(label, "menu")}
-                      className="snap-start text-[13px] px-3.5 py-1.5 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-gray-100 transition-all font-medium whitespace-nowrap shrink-0 shadow-sm"
+                      className="snap-start text-[13px] px-3.5 py-1.5 rounded-md border border-gray-200 text-gray-700 bg-white hover:bg-gray-100 transition-all font-medium whitespace-nowrap shrink-0 shadow-sm"
                     >
                       {label}
                     </button>
@@ -1412,13 +1424,13 @@
                         ? "Type a message..."
                         : "Please contact an admin to use the chatbot."
                     }
-                    className="flex-1 resize-none border border-gray-300 rounded-2xl px-4 py-3.5 text-[15px] focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 shadow-sm transition-all max-h-32 overflow-y-auto w-full"
+                    className="flex-1 resize-none border border-gray-300 rounded-lg px-4 py-3.5 text-[15px] focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 shadow-sm transition-all max-h-32 overflow-y-auto w-full"
                     aria-label="Message input"
                   ></textarea>
                   <button
                     type="submit"
                     disabled={!inputValue.trim()}
-                    className="bg-indigo-600 disabled:bg-indigo-300 hover:bg-indigo-700 text-white px-5 py-3.5 rounded-2xl font-semibold shadow-sm transition-all flex items-center justify-center shrink-0"
+                    className="bg-indigo-600 disabled:bg-indigo-300 hover:bg-indigo-700 text-white px-5 py-3.5 rounded-lg font-semibold shadow-sm transition-all flex items-center justify-center shrink-0"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
