@@ -1,3 +1,25 @@
+/**
+ * Code.js — Apps Script web-app entry point.
+ *
+ * - `doGet()` serves the React SPA via HtmlService. It injects:
+ *   1. `logoDataUrl` — base64-encoded SIA logo from Drive.
+ *   2. `userContextJson` — JSON-serialized user profile (email, firstName,
+ *      divisionDisplay, accessAllowed, isAdmin, header texts) for the
+ *      React client to bootstrap without an extra server round-trip.
+ *   On every page load, `getCurrentUserProfile_({ incrementVisits: true,
+ *   forceRefresh: true })` increments the EMAILS visits counter (column D).
+ * - `reauthorizeProgramPermissions()` touches SpreadsheetApp, DriveApp, and
+ *   Session.getActiveUser() so Apps Script requests all required OAuth scopes
+ *   in one consent flow.
+ * - `getReauthorizationInfo()` is a safe helper called from the React client
+ *   to surface the authorization URL when the user needs to grant scopes.
+ * - `getLogoDataUrl_()` retrieves the SIA logo blob from Drive by file ID.
+ *
+ * Dependencies: auth.js (getCurrentUserProfile_, getCurrentUserAuthDebug_),
+ *               messages.js (getAccessDeniedMessage_).
+ * Called by: Apps Script runtime (doGet on web-app request).
+ */
+
 function doGet() {
   const template = HtmlService.createTemplateFromFile('Index');
   template.logoDataUrl = getLogoDataUrl_();

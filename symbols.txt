@@ -1,0 +1,143 @@
+helper.js:function showDidYouMean(suggestions, options) { // run this if confidence is < 0.9
+helper.js:function extractUnGrdSubjectText_(userText) {
+helper.js:function getUnGrdEntityHint_(userText) {
+helper.js:function buildUnGrdEntityDisambiguation_(userText) {
+helper.js:function buildFullQueryLabel(intentName, entityValue) {
+helper.js:function getMissingEntityMessage(entityKey) {
+helper.js:function normalizeDashCharacters_(text) {
+helper.js:const CANONICAL_DIVISIONS_ = [
+helper.js:const DIVISION_STOP_WORDS_ = {
+helper.js:function stripParentheticalText_(value) {
+helper.js:function normalizeDivisionText_(value) {
+helper.js:function tokenizeDivisionText_(value) {
+helper.js:function buildAcronymFromTokens_(tokens) {
+helper.js:function scoreDivisionSimilarity_(candidateDivision, canonicalDivision) {
+helper.js:function resolveCanonicalDivision_(rawDivision) {
+helper.js:function extractFirstNameFromFullName_(fullName) {
+helper.js:function getCurrentUserEmail_() {
+helper.js:function getCurrentUserEmailCandidates_() {
+helper.js:function getCurrentUserSessionCacheKey_() {
+helper.js:function normalizeEmailAddress_(value) {
+helper.js:function stripPlusAliasFromEmail_(email) {
+helper.js:function getCurrentUserAuthDebug_() {
+helper.js:function getEmailsSheet_() {
+helper.js:function getMetricsSheet_() {
+helper.js:function getEmailSheetColumnMap_() {
+helper.js:function findEmailRowByAddress_(email) {
+helper.js:function buildUserProfileFromEmailRow_(email, rowInfo) {
+helper.js:function getCurrentUserProfile_(options) {
+helper.js:function incrementSheetCounter_(sheetName, rowNumber, columnNumber, delta) {
+helper.js:function incrementEmailCounter_(rowNumber, columnNumber, delta) {
+helper.js:function findMetricRowByFunctionName_(functionName) {
+helper.js:function incrementMetricCounter_(functionName, triggerSource) {
+helper.js:function getAccessDeniedMessage_() {
+helper.js:function getCommschedDivisionDeniedMessage_(poNumber) {
+helper.js:function extractHistoricalReferenceDate_(rawText) {
+helper.js:function getRequestContext_(options) {
+helper.js:function rowMatchesUserDivision_(rowDivisionValue, userProfile) {
+helper.js:function getCommschedNotFoundMessage_(poNumber) {
+helper.js:function getCommschedNoDataMessage_(poNumber) {
+helper.js:function getGrTicketNotFoundMessage_(grNumber) {
+helper.js:function getGrTicketNoDataMessage_(grNumber) {
+helper.js:function formatCsvValue_(value) {
+helper.js:function buildCsvContent_(headers, rows) {
+helper.js:function buildMarkdownTable_(headers, rows) {
+helper.js:function buildOverflowTableRow_(columnCount, summaryText) {
+helper.js:function buildTableResponse_(headers, rows, options) {
+helper.js:function collectUniqueColumnValues_(rows, columnName) {
+helper.js:function scoreTextCandidate_(queryText, candidateText) {
+helper.js:function buildTopTextMatches_(queryText, candidates, limit) {
+helper.js:function buildFuzzyEntityMatch_(queryText, candidates, options) {
+helper.js:function buildDivisionDidYouMeanResponse_(rawDivision, intentName, options) {
+helper.js:function finalizeBotResponse_(response, userProfile) {
+helper.js:function parseDisplayAmount_(raw) {
+helper.js:function formatCount_(n) {
+helper.js:function formatMoney_(value) {
+helper.js:function formatCurrencySummaryTotals_(entries) {
+helper.js:function buildCurrencySummaryEntries_(rows, options) {
+helper.js:function buildMatchedCurrencySummary_(rows, rawEntityValue, options) {
+helper.js:function normalizePoSlaCellValue_(value) {
+helper.js:function getPoSlaBucketInfo_(value) {
+helper.js:function resolvePoSlaBucketCellsForFilter_(rawFilter) {
+helper.js:function buildPoAgingReply_(poNumber, bucketInfo, intentName) {
+helper.js:function getIntentInfo(userText) {
+helper.js:function getGeminiResponse(userText, options) {
+helper.js:function getLinksSheet_() {
+helper.js:function parseDateValue_(value) {
+helper.js:function openSpreadsheetFromLink_(link) {
+helper.js:function formatCommschedSheetName_(dateValue, monthFormat) {
+helper.js:function findHeaderColumn_(headers, exactHeader) {
+helper.js:function normalizeHeaderText_(value) {
+helper.js:function getScriptCache_() {
+helper.js:function getCachedJson_(key) {
+helper.js:function setCachedJson_(key, value, ttlSeconds) {
+helper.js:function normalizeRequestedFields_(requestedFields) {
+helper.js:function isVisibleSheet_(sheet) {
+helper.js:function getSpreadsheetLinkFromCell_(range) {
+helper.js:function getSourcesFromLinksRange_(startRow, dateColumn, linkColumn) {
+helper.js:function getSourceFromLinksCell_(cellA1) {
+helper.js:function resolveCommschedSheet_(workbook, sourceInfo) {
+helper.js:function findFirstVisibleSheet_(workbook) {
+helper.js:function resolveSheetByHeader_(workbook, headerRow, headerName) {
+helper.js:function resolveRfpSheet_(workbook) {
+helper.js:function resolveGrSheet_(workbook) {
+helper.js:const DATASET_SPECS = {
+helper.js:function resolveDatasetUserProfile_(options) {
+helper.js:function buildLookupMissResult_(meta) {
+helper.js:function buildLookupResultFromRow_(meta, rowNumber, rowValues, requestedFieldKeys, method) {
+helper.js:function shouldApplyDivisionFilter_(spec, userProfile) {
+helper.js:function getRequestedFieldKeysForDataset_(datasetKey, requestedFieldKeys, userProfile) {
+helper.js:function findMatchingRowInColumnWithDivision_(sheet, columnIndex, divisionColumnIndex, dataStartRow, lastRow, targetValue, userProfile) {
+helper.js:function compareSourceCandidates_(a, b) {
+helper.js:function pickSourceFromCandidates_(sources, referenceDate) {
+helper.js:function getCommschedSource_(options) {
+helper.js:function getLatestCommschedSource_() {
+helper.js:function findWorksheetByCandidates_(workbook, candidates, fallbackPattern) {
+helper.js:function resolveHeaderColumnByRule_(headers, rule) {
+helper.js:function resolveRequestedFieldColumns_(headers, fieldSpecs, requestedFieldKeys) {
+helper.js:function buildDatasetMetaCacheKey_(datasetKey, sourceInfo, sheetName, requestedFieldKeys) {
+helper.js:function getDatasetMeta_(datasetKey, requestedFieldKeys, options) {
+helper.js:function getDatasetRowsByField_(datasetKey, requestedFieldKeys, options) {
+helper.js:function getCommschedRows_(requestedFieldKeys, options) {
+helper.js:function lookupDatasetRowByField_(datasetKey, lookupFieldKey, lookupValue, requestedFieldKeys, options) {
+helper.js:function lookupCommschedPoRow_(poNumber, requestedFieldKeys, options) {
+helper.js:function lookupGrTicketRow_(grNumber, requestedFieldKeys, options) {
+helper.js:function findExactMatchRowInColumn_(sheet, columnIndex, dataStartRow, lastRow, targetValue) {
+helper.js:function findRowsInDatasetByExactColumn_(datasetKey, columnFieldKey, targetValue, requestedFieldKeys, options) {
+helper.js:function findRightmostHeaderColumnByPrefix_(headers, headerPrefix) {
+handler.js:function checkPoStatus(entities, parsed, context) { // done
+handler.js:function checkPoGrStatus(entities, parsed, context) { // done
+handler.js:function checkPoRemainingBalance(entities, parsed, context) { // done
+handler.js:function checkPoTotalValue(entities, parsed, context) { // done
+handler.js:function checkPoLatestGrDate(entities, parsed, context) {
+handler.js:function checkPoAging(entities, parsed, context) {
+handler.js:function listPoAging(entities, parsed, context) {
+handler.js:function listProjectDelayedClosure(entities, parsed, context) {
+handler.js:function listPoUrgentCleanup(entities, parsed, context) {
+handler.js:function listPoVendor(entities, parsed, context) {
+handler.js:function listPoDormant(entities, parsed, context) {
+handler.js:function listPoVendorRemainingBalance(entities, parsed, context) {
+handler.js:function listVendorRemainingBalance(entities, parsed, context) {
+handler.js:function checkTotalPoAmountVendor(entities, parsed, context) {
+handler.js:function checkDownpaymentVendorOrPo(entities, parsed, context) {
+handler.js:function listPoValueByDivision(entities, parsed, context) {
+handler.js:function listPosByProject(entities, parsed, context) {
+handler.js:function listProjectsByDivision(entities, parsed, context) {
+handler.js:function listActivePosForProponent(entities, parsed, context) {
+handler.js:function listServicesPosByDivisionAndType(entities, parsed, context) {
+handler.js:function extractDatesFromText_(text) {
+handler.js:function checkPoYear(entities, parsed, context) {
+handler.js:function listPosWithGrMovementBetween(entities, parsed, context) {
+handler.js:function listPosStagnantGr(entities, parsed, context) {
+handler.js:function checkPoFullyGrd(entities, parsed, context) {
+handler.js:function listOpenPosForVendor(entities, parsed, context) {
+handler.js:function listPoTaggedForClosure(entities, parsed, context) {
+handler.js:function listPoNotForClosure(entities, parsed, context) {
+handler.js:function listPoLowGrPercent(entities, parsed, context) {
+handler.js:function checkTotalUnGrdVendor(entities, parsed, context) {
+handler.js:function listTotalUnGrdVendor(entities, parsed, context) {
+handler.js:function checkTotalUnGrdDivision(entities, parsed, context) {
+handler.js:function listTotalUnGrdDivision(entities, parsed, context) {
+handler.js:function parseGrTicketSubmittedDate_(value) {
+handler.js:function checkGrTicketStatus(entities, parsed, context) {
+handler.js:function checkGrTicketSubmitted(entities, parsed, context) {
