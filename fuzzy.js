@@ -119,6 +119,7 @@ function buildFuzzyEntityMatch_(queryText, candidates, options) {
 				id: item.value,
 				label: labelBuilder(item.value),
 				displayText: item.value,
+				query: buildFullQueryLabel(intentName, item.value),
 				entityType: entityType,
 			};
 		});
@@ -165,6 +166,7 @@ function buildDivisionDidYouMeanResponse_(rawDivision, intentName, options) {
 			id: item.value,
 			label: buildFullQueryLabel(intentName, item.value),
 			displayText: item.value,
+			query: buildFullQueryLabel(intentName, item.value),
 			entityType: entityType,
 		};
 	});

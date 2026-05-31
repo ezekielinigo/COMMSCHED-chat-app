@@ -12,7 +12,7 @@
  * - `checkPoAging`         → PO SLA bucket → aging reply (shared with
  *                            check_po_aging_exceeded / check_po_high_risk intents)
  * - `checkPoYear`          → PO creation year extracted from PO Date
- * - `checkPoFullyGrd`      → YES/NO based on unGR'd balance or GR bucket
+ * - `checkPoFullyGrd`      → fully GR'd / pending unGR'd balance reply
  *
  * All handlers use `lookupCommschedPoRow_()` from sheets.js which enforces
  * division-access rules and returns `{ accessDenied, message }` on mismatch.
@@ -226,17 +226,24 @@ function checkPoFullyGrd(entities, parsed, context) {
 	const ungrdNum = parseDisplayAmount_(ungrdRaw);
 	if (!isNaN(ungrdNum)) {
 		if (Number(ungrdNum) === 0) {
-			return "YES — <b>PO " + poNumber + "</b> is fully GR'd.";
+			return "<b>PO " + poNumber + "</b> is fully GR'd.";
 		}
-		return "NO — <b>PO " + poNumber + "</b> is not yet fully GR'd.";
+		const currencyValue = String(lookup.values && lookup.values.currency ? lookup.values.currency : "USD").trim() || "USD";
+		return "<b>PO " + poNumber + "</b> is not yet fully GR'd. (Pending unGR'd balance: " + currencyValue + " " + formatMoney_(ungrdNum) + ")";
 	}
 
 	const grBucket = String(lookup.values && lookup.values.grBucket ? lookup.values.grBucket : "").trim().toUpperCase();
 	if (grBucket.indexOf("H. FULLY GRD") !== -1 || grBucket.indexOf("FULL") !== -1) {
-		return "YES — <b>PO " + poNumber + "</b> is fully GR'd.";
+		return "<b>PO " + poNumber + "</b> is fully GR'd.";
 	}
 	if (grBucket) {
-		return "NO — <b>PO " + poNumber + "</b> is not yet fully GR'd.";
+		const remainingRaw = lookup.values && lookup.values.remainingBalance ? lookup.values.remainingBalance : "";
+		const remainingNum = parseDisplayAmount_(remainingRaw);
+		const currencyValue = String(lookup.values && lookup.values.currency ? lookup.values.currency : "USD").trim() || "USD";
+		if (!isNaN(remainingNum) && Number(remainingNum) > 0) {
+			return "<b>PO " + poNumber + "</b> is not yet fully GR'd. (Pending unGR'd balance: " + currencyValue + " " + formatMoney_(remainingNum) + ")";
+		}
+		return "<b>PO " + poNumber + "</b> is not yet fully GR'd.";
 	}
 
 	return getCommschedNoDataMessage_(poNumber);

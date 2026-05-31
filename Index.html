@@ -868,7 +868,7 @@
           const isSuggestionPayload =
             text && typeof text === "object" && !Array.isArray(text);
           const raw = isSuggestionPayload
-            ? String(text.displayText || text.label || text.query || "").trim()
+            ? String(text.label || text.displayText || text.query || "").trim()
             : String(text || "").trim();
           if (!raw) return;
           const startedAt = Date.now();

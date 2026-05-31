@@ -310,7 +310,7 @@ const INTENTS = [
 	/********** NEW: Additional PO queries requested by user */
 	{
 		name: "check_po_fully_grd",
-		intentKeywords: ["gr", "goods receipt", "fully", "grd"],
+		intentKeywords: ["gr", "goods receipt", "fully", "grd", "pending", "balance", "ungrd", "ungr'd", "still", "how much"],
 		conflictKeywords: ["age", "aging", "old", "closure"],
 		phrases: [
 			"is PO X fully grd",
@@ -318,7 +318,13 @@ const INTENTS = [
 			"is PO X fully gred",
 			"is PO X already fully gred",
 			"is PO X fully grd?",
-			"is PO X fully gr'd"
+			"is PO X fully gr'd",
+			"How much is still pending GR for PO X?",
+			"What is the unGR'd balance for PO X?",
+			"how much unGR'd is left for PO X?",
+			"How much is still pending GR for PO 4540512443?",
+			"What is the unGR'd balance for PO 4540512443?",
+			"how much unGR'd is left for PO 4540512443?"
 		],
 		requiredEntities: ["PO_NUMBER"],
 		handler: "checkPoFullyGrd"
