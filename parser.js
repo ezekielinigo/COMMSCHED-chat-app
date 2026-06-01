@@ -64,6 +64,53 @@ function extractAgeFilterMatches(rawText) {
 	return matches;
 }
 
+function extractDaysMatches(rawText) {
+	const input = String(rawText || "").replace(/[‐‑‒–—―−]/g, "-");
+	const matches = [];
+	const seen = {};
+
+	function addDays(value) {
+		const num = parseInt(String(value || "").trim(), 10);
+		if (isNaN(num) || num <= 0) {
+			return;
+		}
+		const normalizedValue = String(num);
+		if (seen[normalizedValue]) {
+			return;
+		}
+		seen[normalizedValue] = true;
+		matches.push(normalizedValue);
+	}
+
+	if (/\b(?:past|last)\s+week\b/i.test(input)) {
+		addDays(7);
+	}
+
+	if (/\b(?:past|last)\s+month\b/i.test(input)) {
+		addDays(30);
+	}
+
+	const weekPattern = /\b(\d+)\s*weeks?\b/gi;
+	let weekMatch = null;
+	while ((weekMatch = weekPattern.exec(input)) !== null) {
+		addDays(parseInt(weekMatch[1], 10) * 7);
+	}
+
+	const monthPattern = /\b(\d+)\s*months?\b/gi;
+	let monthMatch = null;
+	while ((monthMatch = monthPattern.exec(input)) !== null) {
+		addDays(parseInt(monthMatch[1], 10) * 30);
+	}
+
+	const dayPattern = /\b(\d+)\s*(?:days?|d)\b/gi;
+	let dayMatch = null;
+	while ((dayMatch = dayPattern.exec(input)) !== null) {
+		addDays(dayMatch[1]);
+	}
+
+	return matches;
+}
+
 function extractPercentMatches(rawText) {
 	const input = String(rawText || "").replace(/[‐‑‒–—―−]/g, "-");
 	const patterns = [
@@ -275,6 +322,7 @@ function extractEntitiesFromText(userText) {
 	const grMatches = extractGrTicketMatches(rawText);
 	const percentMatches = extractPercentMatches(rawText);
 	const amountMatches = extractAmountMatches(rawText);
+	const daysMatches = extractDaysMatches(rawText);
 	// vendor capture: phrases like "from huawei" or "for nokia"
 	const vendorMatches = [];
 	const vendorRegex = /\b(?:from|for)\s+([A-Za-z0-9&.,'()\-\/\s]{2,60})/i;
@@ -318,6 +366,7 @@ function extractEntitiesFromText(userText) {
 		GR_NUMBER: grMatches,
 		PERCENT: percentMatches,
 		AMOUNT: amountMatches,
+		DAYS: daysMatches,
 		VENDOR: vendorMatches,
 		DIVISION: divisionMatches,
 		DATE: dateMatches,
@@ -337,6 +386,9 @@ function normalizeEntityValue(entityKey, rawValue) {
 	}
 	if (entityKey === "AMOUNT") {
 		return normalizeText(rawValue).replace(/\s+/g, " ").trim();
+	}
+	if (entityKey === "DAYS") {
+		return String(rawValue || "").replace(/[^0-9]/g, "").trim();
 	}
 	if (entityKey === "DATE_RANGE") {
 		// keep the range text normalized but handlers will split on the separator
@@ -364,6 +416,7 @@ function replaceEntityValuesForMatching(normalizedText, entityMatches) {
 	});
 	(entityMatches.PERCENT || []).forEach((value) => replaceMatch("PERCENT", value));
 	(entityMatches.AMOUNT || []).forEach((value) => replaceMatch("AMOUNT", value));
+	(entityMatches.DAYS || []).forEach((value) => replaceMatch("DAYS", value));
 	(entityMatches.AGE_FILTER || []).forEach((value) => replaceMatch("AGE_FILTER", value));
 	(entityMatches.GR_NUMBER || []).forEach((value) => replaceMatch("GR_NUMBER", value));
 	(entityMatches.PO_NUMBER || []).forEach((value) => replaceMatch("PO_NUMBER", value));

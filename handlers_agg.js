@@ -91,31 +91,69 @@ function checkTotalPoAmountDivision(entities, parsed, context) {
 	return 'Division <b>' + resolved.canonicalDivision + '</b> has a total PO amount of ' + currencyParts.join(', ') + '.';
 }
 
-function checkDownpaymentVendorOrPo(entities, parsed, context) {
-	const rawVendor = String(entities.VENDOR || '').trim();
-	const poNumber = String(entities.PO_NUMBER || '').trim();
+function extractAsOfDateFromMeta_(meta, fieldKey) {
+	try {
+		if (!meta || !Array.isArray(meta.headers) || !meta.fieldColumns) return '';
+		const idx = meta.fieldColumns[fieldKey];
+		if (typeof idx !== 'number' || idx < 0) return '';
+		const header = String(meta.headers[idx] || '').trim();
+		const m = header.match(/as of\s*(.*)$/i);
+		if (m && m[1]) return m[1].trim();
+		if (meta.sourceDateMs) {
+			return Utilities.formatDate(new Date(meta.sourceDateMs), Session.getScriptTimeZone(), 'MMM dd, yyyy');
+		}
+		return '';
+	} catch (e) {
+		return '';
+	}
+}
 
-	if (poNumber) {
-		const lookup = lookupCommschedPoRow_(poNumber, ['downpaymentDp','currency'], context);
-		if (lookup && lookup.accessDenied) return lookup.message || getCommschedDivisionDeniedMessage_(poNumber);
-		if (!lookup || !lookup.found) return getCommschedNotFoundMessage_(poNumber);
-		const rawDp = lookup.values ? (lookup.values.downpaymentDp || '') : '';
-		if (!rawDp) return getGrTicketNoDataMessage_(poNumber);
-		const num = parseDisplayAmount_(rawDp);
-		const currency = String(lookup.values && lookup.values.currency ? lookup.values.currency : '').trim() || 'USD';
-		if (isNaN(num)) return 'No downpayment data available for PO ' + poNumber + '.';
-		return 'Downpayment release for <b>PO ' + poNumber + '</b>: ' + (currency ? currency + ' ' : '') + formatMoney_(num) + ' (Downpayment (DP) in USD as of May 23 [BQ]).';
+function checkDownpaymentPO(entities, parsed, context) {
+	const poNumber = String(entities.PO_NUMBER || '').trim();
+	if (!poNumber) return getMissingEntityMessage('PO_NUMBER');
+
+	const lookup = lookupCommschedPoRow_(poNumber, ['downpayment','downpaymentDp','currency'], context);
+	if (lookup && lookup.accessDenied) return lookup.message || getCommschedDivisionDeniedMessage_(poNumber);
+	if (!lookup || !lookup.found) return getCommschedNotFoundMessage_(poNumber);
+
+	const rawLocal = lookup.values ? (lookup.values.downpayment || '') : '';
+	const rawUsd = lookup.values ? (lookup.values.downpaymentDp || '') : '';
+	if (!rawLocal && !rawUsd) return getGrTicketNoDataMessage_(poNumber);
+
+	const localNum = parseDisplayAmount_(rawLocal);
+	const usdNum = parseDisplayAmount_(rawUsd);
+	const currency = String(lookup.values && lookup.values.currency ? lookup.values.currency : '').trim() || '';
+
+	if ((rawLocal && isNaN(localNum)) && (rawUsd && isNaN(usdNum))) return 'No downpayment data available for PO ' + poNumber + '.';
+
+	const dateStr = extractAsOfDateFromMeta_(lookup.meta, (rawLocal ? 'downpayment' : 'downpaymentDp')) || extractAsOfDateFromMeta_(lookup.meta, 'downpaymentDp');
+
+	let primary = '';
+	if (!isNaN(localNum) && localNum !== 0) {
+		primary = (currency ? currency + ' ' : '') + formatMoney_(localNum);
+		if (!isNaN(usdNum) && usdNum !== 0 && String(currency || '').toUpperCase() !== 'USD') {
+			primary += ' (USD ' + formatMoney_(usdNum) + ')';
+		}
+	} else if (!isNaN(usdNum)) {
+		primary = 'USD ' + formatMoney_(usdNum);
 	}
 
+	const asOf = dateStr ? ' as of ' + dateStr : '';
+	return 'Downpayment release for <b>PO ' + poNumber + '</b>: ' + primary + asOf;
+}
+
+function checkDownpaymentVendor(entities, parsed, context) {
+	const rawVendor = String(entities.VENDOR || '').trim();
 	if (!rawVendor) return getMissingEntityMessage('VENDOR');
 
-	const dataset = getCommschedRows_(['vendor','currency','downpaymentDp'], context);
+	const dataset = getCommschedRows_(['vendor','currency','downpayment','downpaymentDp'], context);
 	if (!dataset || !dataset.rows) return 'Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.';
 
 	const summary = buildMatchedCurrencySummary_(dataset.rows, rawVendor, {
 		entityField: 'vendor',
-		amountFieldCandidates: ['downpaymentDp'],
-		intentName: 'check_downpayment_vendor_or_po',
+		amountFieldCandidates: ['downpayment','downpaymentDp'],
+		currencyField: 'currency',
+		intentName: 'check_downpayment_vendor',
 		entityType: 'vendor',
 		noMatchMessage: 'No matching vendors found.',
 	});
@@ -124,10 +162,22 @@ function checkDownpaymentVendorOrPo(entities, parsed, context) {
 	}
 	if (!summary.entries.length) return 'No downpayment records found for vendor.';
 
-	const formattedTotals = summary.entries.map(function(entry) {
-		return (entry.currency ? entry.currency + ' ' : '') + formatMoney_(entry.total);
-	}).join(', ');
-	return 'Downpayment release for <b>' + summary.chosen + '</b>: ' + formattedTotals + ' (Downpayment (DP) in USD as of May 23 [BQ]).';
+	// Pair common local currency (e.g., PHP) with USD if both exist
+	const entriesByCurrency = {};
+	summary.entries.forEach(function(e){ entriesByCurrency[String(e.currency||'').toUpperCase()] = e; });
+
+	let formatted = '';
+	if (entriesByCurrency['PHP'] && entriesByCurrency['USD']) {
+		formatted = 'PHP ' + formatMoney_(entriesByCurrency['PHP'].total) + ' (USD ' + formatMoney_(entriesByCurrency['USD'].total) + ')';
+	} else {
+		formatted = summary.entries.map(function(entry) { return (entry.currency ? entry.currency + ' ' : '') + formatMoney_(entry.total); }).join(', ');
+	}
+
+	// determine as-of date from dataset meta (prefer downpayment header)
+	const dateStr = extractAsOfDateFromMeta_(dataset.meta, 'downpayment') || extractAsOfDateFromMeta_(dataset.meta, 'downpaymentDp') || (dataset.meta && dataset.meta.sourceDateMs ? Utilities.formatDate(new Date(dataset.meta.sourceDateMs), Session.getScriptTimeZone(), 'MMM dd, yyyy') : '');
+
+	const asOf = dateStr ? ' as of ' + dateStr : '';
+	return 'Downpayment release for <b>' + summary.chosen + '</b>: ' + formatted + asOf;
 }
 
 function checkTotalUnGrdVendor(entities, parsed, context) {

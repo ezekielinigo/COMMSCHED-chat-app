@@ -21,8 +21,12 @@
  * - `listPoTaggedForClosure`     → canned text reply (2023 and earlier)
  * - `listPoNotForClosure`        → canned text reply (2024 onwards)
  * - `listPoLowGrPercent`         → POs with GR bucket cells below a threshold (default 30%)
- * - `listPosWithGrMovementBetween` → POs with Latest GR Date in a date range
- * - `listPosStagnantGr`          → POs with no GR movement in N days
+ * - `listGrMovement`             → POs with Latest GR Date in a date range
+ * - `listGrStagnant`             → POs with no GR movement in N days
+ *
+ * Backward-compatible aliases:
+ * - `listPosWithGrMovementBetween` → `listGrMovement`
+ * - `listPosStagnantGr`            → `listGrStagnant`
  *
  * `extractDatesFromText_()` is a shared helper for date-range list handlers.
  *
@@ -895,16 +899,24 @@ function extractDatesFromText_(text) {
 	return dates;
 }
 
-function listPosWithGrMovementBetween(entities, parsed, context) {
+function listGrMovement(entities, parsed, context) {
 	const rawText = parsed && parsed.rawText ? String(parsed.rawText) : '';
 	const dates = extractDatesFromText_(rawText);
-	if (!dates || dates.length < 2) {
+	let from = null;
+	let to = null;
+	const relativeDays = entities && entities.DAYS ? parseInt(String(entities.DAYS || ''), 10) : NaN;
+	if (dates && dates.length >= 2) {
+		const d1 = dates[0];
+		const d2 = dates[1];
+		from = d1 <= d2 ? d1 : d2;
+		to = d2 >= d1 ? d2 : d1;
+	} else if (!isNaN(relativeDays) && relativeDays > 0) {
+		const now = new Date();
+		from = new Date(now.getTime() - relativeDays * 24 * 60 * 60 * 1000);
+		to = now;
+	} else {
 		return getMissingEntityMessage('DATE');
 	}
-	const d1 = dates[0];
-	const d2 = dates[1];
-	const from = d1 <= d2 ? d1 : d2;
-	const to = d2 >= d1 ? d2 : d1;
 
 	const dataset = getCommschedRows_(['poNumber','latestGrDate'], context);
 	if (!dataset || !dataset.rows) return 'Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.';
@@ -926,7 +938,13 @@ function listPosWithGrMovementBetween(entities, parsed, context) {
 	return buildTableResponse_(headers, matches, { includeCsvDownload: true, csvFilename: 'sia-pos-gr-movement-' + timestamp + '.csv' });
 }
 
-function listPosStagnantGr(entities, parsed, context) {
+function listPosWithGrMovementBetween(entities, parsed, context) {
+	return listGrMovement(entities, parsed, context);
+}
+
+function listGrStagnant(entities, parsed, context) {
+	const rawText = parsed && parsed.rawText ? String(parsed.rawText) : '';
+	const dates = extractDatesFromText_(rawText);
 	let days = 30;
 	if (entities && entities.DAYS) {
 		const n = parseInt(String(entities.DAYS || ''), 10);
@@ -934,6 +952,15 @@ function listPosStagnantGr(entities, parsed, context) {
 	}
 	const now = new Date();
 	const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+	const hasDateRange = dates && dates.length >= 2;
+	let from = null;
+	let to = null;
+	if (hasDateRange) {
+		const d1 = dates[0];
+		const d2 = dates[1];
+		from = d1 <= d2 ? d1 : d2;
+		to = d2 >= d1 ? d2 : d1;
+	}
 
 	const dataset = getCommschedRows_(['poNumber','latestGrDate'], context);
 	if (!dataset || !dataset.rows) return 'Cannot find the latest monitoring sheet. Please contact the admin team at ntg-bmsocapexsettlement@globe.com.ph for further assistance.';
@@ -945,16 +972,19 @@ function listPosStagnantGr(entities, parsed, context) {
 		const grDate = parseDateValue_(grRaw);
 		if (!po) continue;
 		if (!grDate) {
-			matches.push([po, 'No GR movement', 'N/A']);
+			matches.push([po, 'No GR movement']);
 			continue;
 		}
-		if (grDate < cutoff) {
-			const daysAgo = Math.floor((now.getTime() - grDate.getTime()) / (24*60*60*1000));
+		if ((hasDateRange && grDate < from) || (!hasDateRange && grDate < cutoff)) {
 			const fmt = Utilities.formatDate(grDate, Session.getScriptTimeZone(), 'MMM d, yyyy');
-			matches.push([po, fmt, String(daysAgo)]);
+			matches.push([po, fmt]);
 		}
 	}
-	if (matches.length === 0) return 'No POs found with stagnant GR for more than ' + days + ' days.';
-	const headers = ['PO Number','Latest GR Date','Days Since GR'];
+	if (matches.length === 0) return hasDateRange ? 'No POs found with stagnant GR in the specified date range.' : 'No POs found with stagnant GR for more than ' + days + ' days.';
+	const headers = ['PO Number','Latest GR Date'];
 	return buildTableResponse_(headers, matches, { includeCsvDownload: false });
+}
+
+function listPosStagnantGr(entities, parsed, context) {
+	return listGrStagnant(entities, parsed, context);
 }

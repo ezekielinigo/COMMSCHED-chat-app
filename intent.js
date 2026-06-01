@@ -299,6 +299,41 @@ const INTENTS = [
 		handler: "listPoDormant"
 	},
 	{
+		name: "list_gr_movement",
+		intentKeywords: ["gr movement", "gr movements", "latest gr date", "movement", "movements"],
+		conflictKeywords: ["ticket", "case", "status", "submitted", "submission", "posting", "validation"],
+		phrases: [
+			"show all POs with GR movement between X and Y",
+			"list POs with GR movement from X to Y",
+			"show me all GR movements within the past week",
+			"show me GR movements within the past week",
+			"show me GR movements within the past month",
+			"show me POs with GR movement within the past week",
+			"show me POs with GR movement within the past month",
+			"show me GR movements from the last X days",
+			"show me POs with latest GR date between X and Y",
+		],
+		responseType: "list",
+		handler: "listGrMovement"
+	},
+	{
+		name: "list_gr_stagnant",
+		intentKeywords: ["stagnant", "stale", "no movement", "no gr movement", "inactive", "idle"],
+		conflictKeywords: ["ticket", "case", "status", "submitted", "submission", "posting", "validation"],
+		phrases: [
+			"list POs with stagnant GR for more than X days",
+			"which POs are stagnant between X and Y",
+			"which POs are stagnant for more than X days",
+			"show POs with no GR movement for X days",
+			"show me POs with no GR movement within the past week",
+			"show me POs with no GR movement within the past month",
+			"show me POs with no GR movement in the past week",
+			"show me POs with no GR movement in the past month",
+		],
+		responseType: "list",
+		handler: "listGrStagnant"
+	},
+	{
 		name: "list_po_vendor_remaining_balance",
 		intentKeywords: ["po", "purchase order"],
 		conflictKeywords: ["vendor", "vendors"],
@@ -495,15 +530,24 @@ const INTENTS = [
 		handler: "checkTotalPoAmountDivision"
 	},
 	{
-		name: "check_downpayment_vendor_or_po",
+		name: "check_downpayment_vendor",
 		phrases: [
 			"what is the total downpayment released for X",
 			"how much downpayment for X",
 			"downpayment for {vendor}",
-			"downpayment for PO X",
 		],
 		requiredEntities: ["VENDOR"],
-		handler: "checkDownpaymentVendorOrPo"
+		handler: "checkDownpaymentVendor"
+	},
+	{
+		name: "check_downpayment_po",
+		phrases: [
+			"downpayment for PO X",
+			"downpayment for PO {PO_NUMBER}",
+			"what is the downpayment for PO {PO_NUMBER}",
+		],
+		requiredEntities: ["PO_NUMBER"],
+		handler: "checkDownpaymentPO"
 	},
 	{
 		name: "list_po_value_by_division",
